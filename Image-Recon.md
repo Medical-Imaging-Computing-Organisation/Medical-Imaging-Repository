@@ -1,6 +1,6 @@
 ## Image Reconstruction Roles:
 
-#### Extract data into usable format from labs - Chris
+#### Extract data into usable format from labs: Chris
 
 #### Identify Coincidences: Alfie
 
