@@ -10,6 +10,16 @@
 - Write code (maths) for generating angles and hence cones using the selected events.
 - Write code for generating a heatmap of cone overlaps and plot it, resulting in the image.
 
+## Image Reconstruction Roles:
+
+- Extract data into usable format from labs: Chris
+
+- Identify Coincidences: Alfie
+
+- Generate Cones (DBP): Richard
+
+- Create Heatmap: Adam
+
 
 ## Monte Carlo:
 
