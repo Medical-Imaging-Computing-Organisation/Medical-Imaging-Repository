@@ -26,7 +26,7 @@ From Chris to Alfie: three numpy arrays.
 - Array one describes every event recorded in every detector, giving the energy deposited (E) and the time at which it occurred (t) as well as uncertainities on these and the index of the detector in whih the event occurred. We expect many events (order of thousands).
 [[detector index, E, t, delta E, delta t], [detector index, E, t, delta E, delta t], ...]
 - Array two gives the position of each detector as (x, y, z) coordinates in the lab reference system along with uncertainties on these measurements, as well as whether the detector is intended to be a scatter or absorber. We expect only a few detectors (e.g. 4).
-[[detector index, x, y, z, delta x, delta y, delta z, Scat/Ab], [detector index, x, y, z, delta x, delta y, delta z, Scat/Ab], ...]
+[[detector index, x, y, z, delta x, delta y, delta z, Scat/Ab], [detector index, x, y, z, delta x, delta y, delta z, Sc/Ab], ...]
 - Array three gives valid pairing of detectors (e.g. 0-1 and 0-2) as well as the solid angle uncertainty between the pairs. We expect approximately n! (factorial of n) detector pairs where n is the number of detectors.
 [[Detector Pairing Information, Solid angle uncertainty between pair], [Detector Pairing Information, Solid angle uncertainty between pair] ...]
 
