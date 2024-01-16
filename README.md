@@ -22,11 +22,13 @@
 
 ### Agreed Formats
 
-From Chris to Alfie: two numpy arrays. 
+From Chris to Alfie: three numpy arrays. 
 - Array one describes every event recorded in every detector, giving the energy deposited (E) and the time at which it occurred (t) as well as uncertainities on these and the index of the detector in whih the event occurred. We expect many events (order of thousands).
 [[detector index, E, t, delta E, delta t], [detector index, E, t, delta E, delta t], ...]
 - Array two gives the position of each detector as (x, y, z) coordinates in the lab reference system along with uncertainties on these measurements, as well as whether the detector is intended to be a scatter or absorber. We expect only a few detectors (e.g. 4).
 [[detector index, x, y, z, delta x, delta y, delta z, Scat/Ab], [detector index, x, y, z, delta x, delta y, delta z, Scat/Ab], ...]
+- Array three gives valid pairing of detectors (e.g. 0-1 and 0-2) as well as the solid angle uncertainty between the pairs. We expect approximately n! (factorial of n) detector pairs where n is the number of detectors.
+[[Detector Pairing Information, Solid angle uncertainty between pair], [Detector Pairing Information, Solid angle uncertainty between pair] ...]
 
 From Alfie to Richard: two numpy arrays plus a value of E0 (and maybe info about detector geometry / uncertainty - need to work out how we're doing this)
 - Array one describes every event identified as a true coincidence, giving the energy deposited in the Compton scatter (E1) and the energy deposited in the PE absorption (E2) along with the index of the detector in which the scatter and absorbtion were detected. We expect many events (~1000).
