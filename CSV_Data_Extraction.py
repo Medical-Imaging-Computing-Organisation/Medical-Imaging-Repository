@@ -46,20 +46,26 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=Fa
         df = pd.read_csv(Location, sep=';', usecols=columns, header=Header, dtype=datatype)
         return df
     
+    # Multiprocessing branch - in development
     if Multiprocess == True:
         
         print("Code still in development, will be added as soon as possible. Please use regular processing for now.")
         
+        
+    # Concurrent branch - functioning
     else:
+        # Read Energy-Time CSV and populate numpy array with its data
         df1 = Read_CSV(CSV1Location, [0,1,2,3,4], Header, np.float32)
         arr1 = df1.values
         
+        # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
         df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
         arr2_1 = df2_1.values
         df2_2 = Read_CSV(CSV2Location, [7], Header, str)
         arr2_2 = df2_2.values
         arr2 = np.hstack((arr2_1, arr2_2))
         
+        # Read Detector Pairing CSV and populate numpy array with its data
         df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
         arr3 = df3.values
 
