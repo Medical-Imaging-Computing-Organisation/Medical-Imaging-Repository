@@ -17,6 +17,11 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=Fa
                         Note: Multiprocess assumes 8 available threads
                                         
                     Header: Optional specification for when CSVs contain a header row, default is None
+            
+            Required CSV Formats:
+                    Energy-Time CSV: | Detector Index (int) | Energy (float32) | Time (float32) | Delta Energy (float32) | Delta Time (float32) |
+                    Detector Location CSV: | Detector Index (int) | x (float32) | y (float32) | z (float32) | Delta x (float32) | Delta y (float32) | Delta z (float32) | Sc/Ab (str) |
+                    Detector Pairing CSV: | Scatterer Index (int) | Absorber Index (int) | Ballpark Angular Uncertainty (float32) |
                     
             Returns:
                     arr1, arr2, arr3 (Numpy Array): Numpy Arrays with the data from input CSVs
