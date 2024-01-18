@@ -6,7 +6,7 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=Fa
     @author: chris
 
 
-    Takes from 1-3 CSV file locations and extracts their data to Numpy Arrays
+    Takes 3 CSV file locations in pre-specified format and extracts their data to Numpy Arrays
     
             Parameters:
                     Folder_Path (string): The local directory path where the CSV(s) are stored
