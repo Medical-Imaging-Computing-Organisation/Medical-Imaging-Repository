@@ -1,5 +1,3 @@
-
-
 def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=False, Header=None):
     '''
 
