@@ -1,46 +1,89 @@
-# This will be our code for extracting data from the CSV-style output from labs
 
-def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Header=None):
+
+def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=False, Header=None):
     '''
-    Takes from 1-3 CSV file locations and extracts their data to cupy arrays
+
+    @author: chris
+
+
+    Takes from 1-3 CSV file locations and extracts their data to Numpy Arrays
     
             Parameters:
                     Folder_Path (string): The local directory path where the CSV(s) are stored
-                    File1_Name (string): The file name of the first CSV to have data extracted
+                    File1_Name (string): The file name of the Energy-Time CSV to have data extracted
+                    File2_Name (string): The file name of the Detector Location CSV to have data extracted
+                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted
                     
             Optional Parameters:
-                    File2_Name (string): The file name of the second CSV to have data extracted
-                    File3_Name (string): The file name of the third CSV to have data extracted
-                    Header: Optional specification for CSVs containing a header row, default is None
+                    Multiprocess (boolean): Whether to use CPU parallelization for data extraction, default is False
+                        Note: Multiprocess assumes 8 available threads
+                                        
+                    Header: Optional specification for when CSVs contain a header row, default is None
                     
             Returns:
-                    arr1 (,arr2, arr3) (CuPy Array): Cupy Arrays with the data from input CSVs
+                    arr1, arr2, arr3 (Numpy Array): Numpy Arrays with the data from input CSVs
+                
+                        arr1: [[Detector Index, Energy, Time, Delta Energy, Delta Time], ...]
+                        arr2: [[Detector Index, x, y, z, Delta x, Delta y, Delta z, Sc/Ab], ...]
+                        arr3: [[Scatterer Index, Absorber Index, Ballpark Angular Uncertainty], ...]
                     
     '''
     # Imports
-    import cupy as np
+    import numpy as np
     import pandas as pd
     from pathlib import Path
+    import multiprocessing
     
-    # Forming full location path for CSV1, creating pandas DataFrame and transferring to numpy (cupy) array
+    # Forming full location path for each CSV
     BaseLocation = str(Path(Folder_Path))
     CSV1Location = BaseLocation + "\\" + File1_Name
-    df1 = pd.read_csv(CSV1Location, sep=';', header=Header, dtype=np.float32)
-    arr1 = df1.values
+    CSV2Location = BaseLocation + "\\" + File2_Name
+    CSV3Location = BaseLocation + "\\" + File3_Name
     
-    # Performing the same for optional second and third CSVs if applicable
-    if File2_Name != None:
-        CSV2Location = BaseLocation + "\\" + File2_Name
-        df2 = pd.read_csv(CSV2Location, sep=';', header=Header, dtype=np.float32)
-        arr2 = df2.values
-        if File3_Name != None:
-            CSV3Location = BaseLocation + "\\" + File3_Name
-            df3 = pd.read_csv(CSV3Location, sep=';', header=Header, dtype=np.float32)
-            arr3 = df3.values
-            return arr1, arr2, arr3
-        else:
-            return arr1, arr2
+    
+    # Internal processing function for reading CSVs via Pandas
+    def Read_CSV(Location, columns, Header, datatype):
+        df = pd.read_csv(Location, sep=';', usecols=columns, header=Header, dtype=datatype)
+        return df
+    
+    if Multiprocess == True:
+        
+        print("Code still in development, will be added as soon as possible. Please use regular processing for now.")
+        
     else:
-        return arr1
+        df1 = Read_CSV(CSV1Location, [0,1,2,3,4], Header, np.float32)
+        arr1 = df1.values
+        
+        df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
+        arr2_1 = df2_1.values
+        df2_2 = Read_CSV(CSV2Location, [7], Header, str)
+        arr2_2 = df2_2.values
+        arr2 = np.hstack((arr2_1, arr2_2))
+        
+        df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
+        arr3 = df3.values
 
 
+    return arr1, arr2, arr3
+
+
+
+
+
+
+if __name__ == "__main__":
+    
+
+    EnergyTimeCSVName = 'test1.csv'
+    DetectorPositionCSVName = 'test2.csv'
+    DetectorPairingCSVName = 'test3.csv'
+    BaseLocation = str(Path("C:/Users/chris/Documents/Medical_Physics_Group_Study/Lab_CSVs"))
+
+
+    EnergyTimeCSVLocation = BaseLocation + "\\" + EnergyTimeCSVName
+    DetectorPositionCSVLocation = BaseLocation + "\\" + DetectorPositionCSVName
+    DetectorPairingCSVLocation = BaseLocation + "\\" + DetectorPairingCSVName
+
+    start = timer()
+    x,y,z = CSV_Extract(BaseLocation, EnergyTimeCSVName, DetectorPositionCSVName, DetectorPairingCSVName)
+    print(timer()-start)
