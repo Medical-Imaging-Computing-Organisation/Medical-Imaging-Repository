@@ -1,32 +1,41 @@
-def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=False, Header=None):
+def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multiprocess=False, Header=None):
     '''
-
-    @author: chris
-
-
-    Takes 3 CSV file locations in pre-specified format and extracts their data to Numpy Arrays
+    
+    @author = Chris
+    
+    Takes 1-3 CSV file locations in pre-specified format and extracts their data to Numpy Arrays
     
             Parameters:
                     Folder_Path (string): The local directory path where the CSV(s) are stored
                     File1_Name (string): The file name of the Energy-Time CSV to have data extracted
-                    File2_Name (string): The file name of the Detector Location CSV to have data extracted
-                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted
+                    
                     
             Optional Parameters:
+                    File2_Name (string): The file name of the Detector Location CSV to have data extracted
+                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted
                     Multiprocess (boolean): Whether to use CPU parallelization for data extraction, default is False
-                        Note: Multiprocess assumes 8 available threads
-                                        
+                        Note: Multiprocess assumes 8 available threads                                      
                     Header: Optional specification for when CSVs contain a header row, default is None
+            
             
             Required CSV Formats:
                     Energy-Time CSV: | Detector Index (int) | Energy (float32) | Time (float32) | Delta Energy (float32) | Delta Time (float32) |
+                    
+                    
+            Optional CSV Formats:         
                     Detector Location CSV: | Detector Index (int) | x (float32) | y (float32) | z (float32) | Delta x (float32) | Delta y (float32) | Delta z (float32) | Sc/Ab (str) |
                     Detector Pairing CSV: | Scatterer Index (int) | Absorber Index (int) | Ballpark Angular Uncertainty (float32) |
                     
+                    
             Returns:
-                    arr1, arr2, arr3 (Numpy Array): Numpy Arrays with the data from input CSVs
+                    arr1 (Numpy Array): Numpy Array with the data from Energy-Time CSV
                 
                         arr1: [[Detector Index, Energy, Time, Delta Energy, Delta Time], ...]
+                       
+                       
+            Optional Returns:
+                    arr2, arr3 (Numpy Arrays): Numpy Arrays with the data from Detector Location and Detector Pairing CSVs respectively
+                        
                         arr2: [[Detector Index, x, y, z, Delta x, Delta y, Delta z, Sc/Ab], ...]
                         arr3: [[Scatterer Index, Absorber Index, Ballpark Angular Uncertainty], ...]
                     
@@ -37,11 +46,16 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=Fa
     from pathlib import Path
     import multiprocessing
     
-    # Forming full location path for each CSV
+    # Forming full location path for first (Energy-Time) CSV
     BaseLocation = str(Path(Folder_Path))
     CSV1Location = BaseLocation + "\\" + File1_Name
-    CSV2Location = BaseLocation + "\\" + File2_Name
-    CSV3Location = BaseLocation + "\\" + File3_Name
+    
+    # Forming full location paths for optional second and third (Detector Position and Detector Pairing) CSVs
+    if File2_Name != None:
+        CSV2Location = BaseLocation + "\\" + File2_Name
+        
+        if File3_Name != None:
+            CSV3Location = BaseLocation + "\\" + File3_Name
     
     
     # Internal processing function for reading CSVs via Pandas
@@ -51,29 +65,45 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name, File3_Name, Multiprocess=Fa
     
     # Multiprocessing branch - in development
     if Multiprocess == True:
+    
+        in_development = "Code still in development, will be added as soon as possible. Please use regular processing for now."
         
-        print("Code still in development, will be added as soon as possible. Please use regular processing for now.")
-        
+        return in_development
         
     # Concurrent branch - functioning
     else:
+        
         # Read Energy-Time CSV and populate numpy array with its data
         df1 = Read_CSV(CSV1Location, [0,1,2,3,4], Header, np.float32)
         arr1 = df1.values
         
-        # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
-        df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
-        arr2_1 = df2_1.values
-        df2_2 = Read_CSV(CSV2Location, [7], Header, str)
-        arr2_2 = df2_2.values
-        arr2 = np.hstack((arr2_1, arr2_2))
-        
-        # Read Detector Pairing CSV and populate numpy array with its data
-        df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
-        arr3 = df3.values
-
-
-    return arr1, arr2, arr3
+        # Conditional for Detector Location CSV
+        if File2_Name != None:
+            
+            # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
+            df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
+            arr2_1 = df2_1.values
+            df2_2 = Read_CSV(CSV2Location, [7], Header, str)
+            arr2_2 = df2_2.values
+            arr2 = np.hstack((arr2_1, arr2_2))
+            
+            # Conditional for Detector Pairing CSV
+            if File3_Name != None:
+                
+                # Read Detector Pairing CSV and populate numpy array with its data
+                df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
+                arr3 = df3.values
+                
+                # Returning all 3 arrays when applicable
+                return arr1, arr2, arr3
+            
+            else:
+                # Returning first 2 (Energy-Time and Detector Location) arrays when applicable
+                return arr1, arr2
+            
+        else:
+            # Returning first (Energy-Time) array when applicable
+            return arr1
 
 
 
