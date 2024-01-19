@@ -138,6 +138,7 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multi
             # Returning first (Energy-Time) array when applicable
             return arr1
 
+# For the purposes of the initial lab test in week 1, only the Energy-Time array needs to be created, and Multiprocessing isn't strictly necessary
 all_events = CSV_Extract(Folder_Path, File1_Name)
 all_coincidences = np.empty(4)
 
