@@ -40,7 +40,7 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multi
                         arr3: [[Scatterer Index, Absorber Index, Ballpark Angular Uncertainty], ...]
                     
     '''
-    # Imports
+    # Imports, for when this function is being externally called
     import numpy as np
     import pandas as pd
     from pathlib import Path
