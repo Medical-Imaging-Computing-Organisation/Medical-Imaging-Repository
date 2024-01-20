@@ -1,1 +1,1 @@
-## Place any Monte Carlo files here
+## Folder for any Monte Carlo files
