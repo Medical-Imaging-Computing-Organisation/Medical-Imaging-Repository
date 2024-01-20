@@ -1,4 +1,4 @@
-def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multiprocess=False, Header=None):
+def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multiprocess=False, Header=None):
     '''
     
     @author = Chris
@@ -6,6 +6,7 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multi
     Takes 1-3 CSV file locations in pre-specified format and extracts their data to Numpy Arrays
     
             Parameters:
+                    Delimiter (string): Delimiter for column separation within the CSV(s)
                     Folder_Path (string): The local directory path where the CSV(s) are stored
                     File1_Name (string): The file name of the Energy-Time CSV to have data extracted
                     
@@ -60,7 +61,7 @@ def CSV_Extract(Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multi
     
     # Internal processing function for reading CSVs via Pandas
     def Read_CSV(Location, columns, Header, datatype):
-        df = pd.read_csv(Location, sep=';', usecols=columns, header=Header, dtype=datatype)
+        df = pd.read_csv(Location, sep=Delimiter, usecols=columns, header=Header, dtype=datatype)
         return df
     
     # Multiprocessing branch - in development
