@@ -9,7 +9,7 @@
 - Write code (maths) for generating angles and hence cones using the selected events. (Bottleneck)
 - Write code for generating a heatmap of cone overlaps and plot it, resulting in the image. (Bottleneck)
 
-## Image Reconstruction Current Roles:
+### Image Reconstruction Current Roles:
 
 - Work on cone generation side of bottleneck: Chris, Richard
 
@@ -54,7 +54,7 @@ Output from Meshgrid and Heatmap:
 - Generate simple data for IR team testing purposes
 
 
-## Monte Carlo Current Roles:
+### Monte Carlo Current Roles:
 
 - Coding primary generator and step action: James
 - Coding event action, sum and round (outputting into an array): Euan
