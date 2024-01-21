@@ -25,7 +25,7 @@ Output from CSV Extraction:
 - Array three gives valid pairing of detectors (e.g. 0 1 and 0 2) as well as a ballpark estimate of the solid angle uncertainty between the pairs. We expect approximately n! (factorial of n) detector pairs where n is the number of detectors.
 [[Scatterer Index, Absorber Index, Ballpark solid angle uncertainty between pair], [Scatterer Index, Absorber Index, Ballpark solid angle uncertainty between pair] ...]
 
-Output from Coincidence Detection to Cone Generation:
+Output from Coincidence Detection:
 - Array one describes every event identified as a true coincidence, giving the energy deposited in the Compton scatter (E1) and the energy deposited in the PE absorption (E2) along with the index of the detector in which the scatter and absorbtion were detected. We expect many events (~1000).
 [[E1, E2, scatterer index, absorber index], [E1, E2, scatterer index, absorber index], ...]
 - Array two is passed through from CSV Extraction and gives the position of each detector using the same format as above:
