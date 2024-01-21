@@ -50,7 +50,7 @@ Output from Meshgrid and Heatmap:
 
 ## Monte Carlo:
 
-- Produce a simple spectrum to give to Experimental Lab team.
+- Produce a simple spectrum to give to Experimental Lab team
 - Generate simple data for IR team testing purposes
 
 
