@@ -147,7 +147,7 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
 # If the Energy-Time CSV has a header row, comment out the first all_events line and de-comment the second, replacing Header with the row numbers that are headers (eg. 0 if it's solely the first row)
 all_events = CSV_Extract(Folder_Path, File1_Name)
 #all_events = CSV_Extract(Folder_path, File1_Name, None, None, False, Header)
-all_coincidences = np.empty(4)
+all_coincidences = np.empty(6)
 
 for i in range(len(all_events)):
     # iterate over every event in the input array
@@ -169,6 +169,6 @@ for i in range(len(all_events)):
         if bool(t_min <= t2 - delta_t2 and t_max >= t2 + delta_t2) is True:
             # if True, events i and j form a coincident pair
             coincidence_info = np.array([i, j, t1, t2, delta_t1, delta_t2])
-            all_coincidences = np.vstack(all_coincidences, coincidence_info)
+            all_coincidences = np.vstack((all_coincidences, coincidence_info))
 
 print(all_coincidences)
