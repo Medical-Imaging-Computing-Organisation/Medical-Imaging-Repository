@@ -1,7 +1,27 @@
-This file displays useful linux commands that we will need. 
+This file displays useful linux commands and urls that we will need. 
 
 Setup: 
 
+ssh -XY <username>@bluebear.bham.ac.uk     (This requests access to BlueBear)
+
+cd /rds/projects/p/pricet-compton-camera/GS2024/Compton/   (This puts you into the overall Compton directory)
+
+source /rds/projects/p/pricet-compton-camera/GS2024/Compton/setup.sh  (When first time loading in a session, this sets everything up) 
+
+cd /rds/projects/p/pricet-compton-camera/GS2024/Compton/<Directory Name>  (This enables access to a subdirectory of Compton) 
 
 
+Useful commands: 
+
+cd (navigates through directories) 
+ls (lists directories) 
+ls /src 
+ls /include 
+
+make
+
+
+URLS: 
+
+portal.bear.bham.ac.uk 
 
