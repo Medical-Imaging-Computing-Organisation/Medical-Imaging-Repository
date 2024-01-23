@@ -18,7 +18,7 @@
 ### Agreed Formats
 
 Output from CSV Extraction: 
-- Array one describes every event recorded in every detector, giving the energy deposited (E) and the time at which it occurred (t) as well as uncertainities on these and the index of the detector in whih the event occurred. We expect many events (order hundreds of thousands).
+- N arrays where N is the number of detectors used in a given experiment. Each of these arrays describes every event recorded in that detector, giving the energy deposited (E) and the time at which it occurred (t) as well as uncertainities on these and the index of the detector in which the event occurred. Each of the N arrays has the following format:
 [[detector index, E, t, delta E, delta t], [detector index, E, t, delta E, delta t], ...]
 - Array two gives the position of each detector as (x, y, z) coordinates in the lab reference system along with uncertainties on these measurements, as well as whether the detector is intended to be a scatter or absorber. We expect only a few detectors (e.g. 4).
 [[detector index, x, y, z, delta x, delta y, delta z, Sc/Ab], [detector index, x, y, z, delta x, delta y, delta z, Sc/Ab], ...]
@@ -26,8 +26,8 @@ Output from CSV Extraction:
 [[Scatterer Index, Absorber Index, Ballpark solid angle uncertainty between pair], [Scatterer Index, Absorber Index, Ballpark solid angle uncertainty between pair] ...]
 
 Output from Coincidence Detection:
-- Array one describes every event identified as a true coincidence, giving the energy deposited in the Compton scatter (E1) and the energy deposited in the PE absorption (E2) along with the index of the detector in which the scatter and absorbtion were detected. We expect many events (~1000).
-[[E1, E2, scatterer index, absorber index], [E1, E2, scatterer index, absorber index], ...]
+- Array one describes every event identified as a true coincidence, giving the energy deposited in the Compton scatter (E1) and the energy deposited in the PE absorption (E2) with uncertainties (delta E1, delta E2) along with the index of the detector in which the scatter and absorbtion were detected.
+[[E1, E2, delta E1, delta E2, scatterer index, absorber index], [E1, E2, delta E1, delta E2, scatterer index, absorber index], ...]
 - Array two is passed through from CSV Extraction and gives the position of each detector using the same format as above:
 [[detector index, x, y, z, delta x, delta y, delta z, Sc/Ab], [detector index, x, y, z, delta x, delta y, delta z, Sc/Ab], ...]
 
