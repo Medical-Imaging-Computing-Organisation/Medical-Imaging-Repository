@@ -2,6 +2,17 @@
 """
 Created on Tue Jan 23 11:05:11 2024
 
+Function 1 (Richard)
+-------------------
+'Calculate Angles: From the Coincidence Detection output array 
+[[E1, E2, scatterer index, absorber index], 
+[E1, E2, scatterer index, absorber index], ...], 
+use Compton Kinematics to calculate angles theta. 
+Output: 
+[[theta, Scatterer Index, Absorber Index], 
+[theta, Scatterer Index, Absorber Index] ...]'
+
+
 @author: Richard Malone
 """
 import numpy as np
