@@ -1,2 +1,10 @@
 This is the document that outlines how to implement changes and restore oldest working versions of code. 
 
+We should be editing our code using the Bear browser. The URL link is provided in the Linux Commands file. We use the browser link as it makes
+saving directly to the Compton/main2024/ComptonExample directory and checking compilation and output very easy. 
+
+An original 'clean' version of the code that Tony wrote is still available outside the Compton/main2024 for emergencies. 
+
+The problem lies in that if you save faulty code to the server, then no one else can compile the code to check for their errors. 
+
+Inspired
