@@ -15,8 +15,8 @@ Useful commands:
 
 cd (navigates through directories) 
 ls (lists directories) 
-ls /src 
-ls /include 
+ls src/ 
+ls include/ 
 
 make
 
