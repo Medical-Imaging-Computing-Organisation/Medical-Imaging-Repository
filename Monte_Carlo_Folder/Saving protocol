@@ -7,4 +7,18 @@ An original 'clean' version of the code that Tony wrote is still available outsi
 
 The problem lies in that if you save faulty code to the server, then no one else can compile the code to check for their errors. 
 
-Inspired
+
+
+Inspired by this we use the GitHub protocol: 
+
+Within the Monte_Carlo_Folder we have a separate folder for each type of simulation (Spectrum Generation, Data Generation etc.) 
+Within each of these simulation type folders we shoudl have a folder for 'Last Working' code, 'Work in Progress WIP' code and 'Final' code. 
+(The 'last working' is essentially a copy of the clean code, there for ease of copying) 
+
+When coding and editing a file, check for syntax compliation errors, include print statements to check for logical errors. If there are 
+errors in your code, save your file to 'WIP' and restore the server file from the 'latest working' copy. This prevents deadlocks.
+
+If you are happy with your updated code, get another member of the team to make a check. A check should not be a glance over, it should 
+include an independent compilation check and an output check. If the changes are minimal/simple then that should be okay. If the changes are 
+significant then potentially checks with print statements of outputs/processes will be needed. Once the updated file is deemed valid, then 
+it is saved to the server and saved in the GitHub in the 'Final' code folder.
