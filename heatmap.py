@@ -2,7 +2,10 @@
 
 # importing required libraries
 
+import numba
+from numba import njit
 import numpy as np
+# import cupy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
 
@@ -19,7 +22,7 @@ data[x, y, z] = value
 '''
 
 ''' Building voxel grid '''
-dnsy = 21  # number density operator
+dnsy = 51  # number density operator
 lim = 2.5  # extension of area in all directions from origin
 voxel_r = lim/dnsy  # voxel radius
 x = np.linspace(-lim+voxel_r, lim-voxel_r, dnsy, endpoint=True)
@@ -30,33 +33,37 @@ data = np.zeros((dnsy, dnsy, dnsy))  # empty dataset
 # index = (0, 0, 0)
 # print(data[index], "loc", h[index], v[index], d[index])
 
-
-def cone_something(h, v, d):
+@njit
+def cone_something(h, v, d, xyz):
     '''Generating xyz points, to be replaced'''
-    x, y = np.linspace(-lim, lim, dnsy), np.linspace(-lim, lim, dnsy)
-    np.random.shuffle(x)
-    z = 2*np.sqrt(x**2+y**2)-2.5
+    y, z = np.linspace(-lim, lim, 2*dnsy), np.linspace(-lim, lim, 2*dnsy)
+    np.random.shuffle(y)
+    x = 2*np.sqrt(y**2+z**2)-2.5
     cone_points = np.vstack((x, y, z)).T
     cone_points = np.delete(cone_points, np.where(abs(cone_points) > lim)[0], axis=0)
+    
     '''Fitting into voxels'''
+    # usually cone_points will be xyz
     data1 = np.zeros((dnsy, dnsy, dnsy))  # temporary dataset
     cs = np.digitize(cone_points, h[0, :, 0]+voxel_r, right=True)
     # returns indices for xyz bins to fit into voxels
-    for xyz in cs:
-        data1[tuple(xyz)] = 1
-        # sets temp dataset points to 1 to avoid double registration
+    # data1[cs[:, 0], cs[:, 1], cs[:, 2]] = 1  # if no dupe
+    np.add.at(data1, (cs[:, 0], cs[:, 1], cs[:, 2]), 1)
+    # adds 1 to every voxel specified, including duplicate indices
     return data1
 
 
-for a in range(300):  # for now one cone is repeated
-    data += cone_something(h, v, d)
+for a in range(30):  # for now one cone is repeated
+    xyz = []
+    data += cone_something(h, v, d, xyz)
 
 
 ''' Drawing all that '''
-fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3]], figsize=(12, 6),
+fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(12, 6),
              per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
                              2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                             3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'}})
+                             3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
+                             4: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'x'}})
 
 try:  # Colour map creation in try to prevent recreation error
     color_array = plt.get_cmap('YlOrRd')(range(256))
@@ -65,17 +72,25 @@ try:  # Colour map creation in try to prevent recreation error
     plt.colormaps.register(cmap=map_object)
 except ValueError:
     pass
-XYZ = ax[1].scatter(h, v, d, marker='s', s=150, c=data, cmap="YlOrRd_alpha2")
+XYZ = ax[1].scatter(h, v, d, marker='s', s=100, c=data, cmap="YlOrRd_alpha2")
 plt.colorbar(XYZ, location='left')
 
 # ax[1].voxels(np.ones(data.shape), alpha=0.12, edgecolor="k", shade=True)  # Voxel visualization
-XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data, axis=0), cmap="YlOrRd")
+'''Could be choosing to plot the hottest planes?
+    This actually needs to consider the hottest "volume"
+    otherwise different planes could be plotted'''
+mid = int((dnsy-1)/2)
+var = int(mid/5)
+# XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data, axis=0), cmap="YlOrRd")
+XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[mid-var:mid+var+1, :, :], axis=0), cmap="YlOrRd")
 cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
-YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data, axis=1), cmap="YlOrRd")
+# YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data, axis=1), cmap="YlOrRd")
+YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, mid-var:mid+var+1, :], axis=1), cmap="YlOrRd")
 cb3 = plt.colorbar(YZ)
-
+XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, mid-var:mid+var+1], axis=2), cmap="YlOrRd")
+cb4 = plt.colorbar(XY)
 
 ax[1].set_title('3D Graph')
 ax[1].set_zlim(-lim, lim)
-plt.tight_layout()
+# plt.tight_layout()
 plt.show()
