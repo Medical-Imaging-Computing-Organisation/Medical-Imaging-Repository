@@ -4,9 +4,9 @@ Setup:
 
 ssh -XY <username>@bluebear.bham.ac.uk     (This requests access to BlueBear)
 
-cd /rds/projects/p/pricet-compton-camera/GS2024/Compton/   (This puts you into the overall Compton directory)
+source /rds/projects/p/pricet-compton-camera/GS2024/Compton/setup.sh  (When first time loading in a session, this sets everything up)
 
-source /rds/projects/p/pricet-compton-camera/GS2024/Compton/setup.sh  (When first time loading in a session, this sets everything up) 
+cd /rds/projects/p/pricet-compton-camera/GS2024/Compton/   (This puts you into the overall Compton directory)
 
 cd /rds/projects/p/pricet-compton-camera/GS2024/Compton/<Directory Name>  (This enables access to a subdirectory of Compton) 
 
