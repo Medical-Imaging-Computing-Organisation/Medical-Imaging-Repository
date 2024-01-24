@@ -56,7 +56,6 @@ B1PrimaryGeneratorAction::B1PrimaryGeneratorAction()
   G4ParticleDefinition* particle
     = particleTable->FindParticle(particleName="gamma");
   fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
   fParticleGun->SetParticleEnergy(662.*keV);
 }
 
@@ -87,19 +86,49 @@ void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double z0 = -0.5 * Z;
   
   fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
+  
+  G4double px = G4UniformRand();
+  G4double py = G4UniformRand(); 
+  G4double pz = G4UniformRand();
+  
+  G4double r1 = G4UniformRand();
+  G4double r2 = G4UniformRand(); 
+  G4double r3 = G4UniformRand();
+  
+//   std::cout << "r1, r2 and r3 are: " << r1 << ", "<< r2 << ", "<<  r3 << std::endl; 
+  
+  
+  if(r1<0.5)
+    {
+	  px = -1*px;
+// 	  std::cout << "Momentum reversed in x direction" << std::endl;
+      // change x momentum direction
+    }
+	
+  if(r2<0.5)
+    {
+      py = -1*py;
+// 	  std::cout << "Momentum reversed in y direction" << std::endl;
+	    // change y momentum direction
+    }
+  if(r3<0.5)
+    {
+      pz = -1*pz;
+// 	  std::cout << "Momentum reversed in z direction" << std::endl;
+	// change z momentum direction
+	}
+ 
+ std::cout << "Momonetum components (x, y, z) are: " << px << ", "<< py << ", "<<  pz << std::endl; 
+ 
+ fParticleGun->SetParticleMomentum(G4ThreeVector(px, py, pz));
+ 
+ std::cout << "" << std::endl;
+ std::cout << "---------------------------" << std::endl;
+ std::cout << "" << std::endl;
 
-  if(G4UniformRand()<0.5)
-	  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
-	// change momentum direction
-    
-  for(int i=0; i < 5; i++)
-  {
-      Double randomTestNumber = G4UniformRand() 
-      std::cout << "Random number: " << i << " is " << randomTestNumber << std::endl
-  }    
-    
+
+
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
