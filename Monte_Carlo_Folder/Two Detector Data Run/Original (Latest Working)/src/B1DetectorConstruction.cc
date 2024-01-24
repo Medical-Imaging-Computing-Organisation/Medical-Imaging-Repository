@@ -107,10 +107,11 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 		G4PVPlacement(0,G4ThreeVector(0,0*cm,0), LV,"PV", NaI_log, false,0,checkOverlaps);
 */
 
-/*	G4ThreeVector scatterer_pos = G4ThreeVector(0,0,10*cm);
+	G4ThreeVector scatterer_pos = G4ThreeVector(0,0,10*cm);
 	G4VPhysicalVolume* NaI_scatterer = new G4PVPlacement(0, scatterer_pos, "scatterer", NaI_log, physWorld, false, 0, checkOverlaps);	
-        G4VPhysicalVolume* NaI_scatterer2 = new G4PVPlacement(0, G4ThreeVector(0,0,-10*cm), "scatterer", NaI_log, physWorld, false, 1, checkOverlaps);
-*/
+ 
+ // G4VPhysicalVolume* NaI_scatterer2 = new G4PVPlacement(0, G4ThreeVector(0,0,-10*cm), "scatterer", NaI_log, physWorld, false, 1, checkOverlaps);
+
 
  //
   //always return the physical World
