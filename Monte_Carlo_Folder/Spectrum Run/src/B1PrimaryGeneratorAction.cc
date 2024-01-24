@@ -89,9 +89,10 @@ void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
 
   if(G4UniformRand()<0.5)
+  {
 	  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
 	// change momentum direction
-
+  }
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
