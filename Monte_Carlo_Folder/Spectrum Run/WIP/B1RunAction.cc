@@ -106,13 +106,15 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
   // Print
   //  
   if (IsMaster()) {
-    G4cout << TotalEdep << G4endl;
+    for (G4int i = 0; i<TotalEdep.size(); ++i)
+    {
+        G4cout << TotalEdep[i] << ", ";
+    }
     G4cout
      << G4endl
      << "--------------------End of Global Run-----------------------";
   }
   else {
-    G4cout << TotalEdep << G4endl;
     G4cout
      << G4endl
      << "--------------------End of Local Run------------------------";
@@ -131,7 +133,7 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
 
 void B1RunAction::AddEdep(G4double edep)
 {
-    TotalEdep.push_back(edep)
+    TotalEdep.push_back(edep);
 //  fEdep  += edep;
 //  fEdep2 += edep*edep;
 }
