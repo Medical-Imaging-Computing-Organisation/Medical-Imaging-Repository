@@ -120,19 +120,9 @@ void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	}
  
 // std::cout << "Original Momentum components (x, y, z) are: " << px << ", "<< py << ", "<<  pz << std::endl; 
-G4double N = sqrt((px*px) + (py*py) + (pz*pz));
-// std::cout << "Original Momentum magnitude is : " << N << std::endl; 
 
-G4double r_px = px/(N); 
-G4double r_py = py/(N); 
-G4double r_pz = pz/(N);
-
-// std::coutRescaled Momentum components (x, y, z) are: " << r_px << ", "<< r_py << ", "<<  r_pz << std::endl;  
-G4double r_N = sqrt((r_px*r_px) + (r_py*r_py) + (r_pz*r_pz)); 
-// std::cout << "Rescaled Momentum magnitude is : " << r_N << std::endl; 
-
-
- fParticleGun->SetParticleMomentum(G4ThreeVector(r_px, r_py, r_pz));
+ fParticleGun->SetParticleMomentum(G4ThreeVector(px, py, pz)); 
+ fParticleGun->SetParticleEnergy(662.*keV);
 
 /*
  std::cout << "" << std::endl;
