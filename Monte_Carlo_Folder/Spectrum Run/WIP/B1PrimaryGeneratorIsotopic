@@ -118,14 +118,14 @@ void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	// change z momentum direction
 	}
  
- std::cout << "Momonetum components (x, y, z) are: " << px << ", "<< py << ", "<<  pz << std::endl; 
+//  std::cout << "Momonetum components (x, y, z) are: " << px << ", "<< py << ", "<<  pz << std::endl; 
  
  fParticleGun->SetParticleMomentum(G4ThreeVector(px, py, pz));
- 
+ /*
  std::cout << "" << std::endl;
  std::cout << "---------------------------" << std::endl;
  std::cout << "" << std::endl;
-
+*/
 
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
