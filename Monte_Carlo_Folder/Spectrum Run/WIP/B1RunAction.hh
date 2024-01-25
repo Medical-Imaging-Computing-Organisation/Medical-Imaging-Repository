@@ -32,6 +32,7 @@
 #define B1RunAction_h 1
 
 #include "G4UserRunAction.hh"
+#include <vector>
 //#include "G4Parameter.hh"
 #include "globals.hh"
 
@@ -47,6 +48,7 @@ class B1RunAction : public G4UserRunAction
 {
   public:
     B1RunAction();
+    std::vector<G4float> TotalEdep;
     virtual ~B1RunAction();
 
     // virtual G4Run* GenerateRun();
@@ -56,7 +58,6 @@ class B1RunAction : public G4UserRunAction
     void AddEdep (G4double edep); 
 
   private:
-    G4Vector<G4int> TotalEdep;
   //  G4Parameter<G4double> fEdep;
   //  G4Parameter<G4double> fEdep2;
 };
