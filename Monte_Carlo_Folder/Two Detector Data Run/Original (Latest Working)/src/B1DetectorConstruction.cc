@@ -71,8 +71,8 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //     
   // World
   //
-  G4double world_sizeXY = 50*cm;
-  G4double world_sizeZ  = 0.5*m;
+  G4double world_sizeXY = 120*cm;
+  G4double world_sizeZ  = 120*cm;
   G4Material* world_mat = nist->FindOrBuildMaterial("G4_AIR");
   
   G4Box* solidWorld = new G4Box("World",0.5*world_sizeXY, 0.5*world_sizeXY, 0.5*world_sizeZ);     //its size
@@ -106,11 +106,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	G4LogicalVolume* LV = new G4LogicalVolume(shape,world_mat,"LV");
 		G4PVPlacement(0,G4ThreeVector(0,0*cm,0), LV,"PV", NaI_log, false,0,checkOverlaps);
 */
-
-	G4ThreeVector scatterer_pos = G4ThreeVector(0,0,10*cm);
-	G4VPhysicalVolume* NaI_scatterer = new G4PVPlacement(0, scatterer_pos, "scatterer", NaI_log, physWorld, false, 0, checkOverlaps);	
- 
- // G4VPhysicalVolume* NaI_scatterer2 = new G4PVPlacement(0, G4ThreeVector(0,0,-10*cm), "scatterer", NaI_log, physWorld, false, 1, checkOverlaps);
+G4ThreeVector scatterer_pos = G4ThreeVector(0,40,40*cm);
+G4VPhysicalVolume* NaI_scatterer = new G4PVPlacement(0, scatterer_pos, "scatterer", NaI_log, physWorld, false, 0, checkOverlaps);	
+//G4VPhysicalVolume* NaI_scatterer2 = new G4PVPlacement(0, G4ThreeVector(0,0,-10*cm), "scatterer", NaI_log, physWorld, false, 1, checkOverlaps);
 
 
  //
