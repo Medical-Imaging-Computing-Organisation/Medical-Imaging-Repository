@@ -90,7 +90,7 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,20:30] = 0 # for now the errors are set to 0
         
         
-            # Copying across the scatterer and absorber indices for function 4
+            # Copying across the scatterer and absorber indices for function 3
             vec_mat_arr[i,30:32] = EArray[unique_index_pairs[i], 2:4]
         
     
