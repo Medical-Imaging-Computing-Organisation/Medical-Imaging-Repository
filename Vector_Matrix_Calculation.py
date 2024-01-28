@@ -57,14 +57,14 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         for i in prange(0, unique_index_pairs.size):
         
             # Generate OA Vector
-            vec_mat_arr[i,:6] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],2]),1:7]
+            vec_mat_arr[i,:6] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:7]
         
             # Generate BA Vector (Values only)
-            vec_mat_arr[i,6:9] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],3]),1:4]
+            vec_mat_arr[i,6:9] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4]
                     
             # Calculate uncertainties on BA Vector
-            vec_mat_arr[i,9:12] = np.power(np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],2]),1:4],2) + 
-                                      np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],3]),1:4],2), 0.5)
+            vec_mat_arr[i,9:12] = np.power(np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4],2) + 
+                                      np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4],2), 0.5)
         
             # Calculating angles for each pair
             angle_arr[i,0] = np.arccos(vec_mat_arr[i,8]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle alpha
@@ -91,7 +91,7 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         
         
             # Copying across the scatterer and absorber indices for function 3
-            vec_mat_arr[i,30:32] = EArray[unique_index_pairs[i], 2:4]
+            vec_mat_arr[i,30:32] = EArray[unique_index_pairs[i], 4:6]
         
     
     
