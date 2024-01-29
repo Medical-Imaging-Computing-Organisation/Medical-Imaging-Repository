@@ -17,6 +17,8 @@ cd (navigates through directories)
 ls (lists directories) 
 ls src/ 
 ls include/ 
+cd .. (move up one directory)
+
 
 make
 
