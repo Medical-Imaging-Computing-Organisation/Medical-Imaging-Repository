@@ -50,12 +50,12 @@ def cones_generator(a, p, xmin, xmax, ymin, ymax, Lmax=5):
         u = x[pr] #x coordinate in the cone frame
         v = y[pr] #y coordinate in the cone frame
         theta = a[:,0] #column of cone angles
-        w = cone(u,v,theta) #zsize=P, z coordinate 
+        w = cone(u,v,theta) #zsize=P, z coordinate in cone frame
         null = np.linspace(0,0,N)
-        u = null + u
-        v = null + v
+        u = null + u #u point cast to the number of w points
+        v = null + v #v point cast to a number of w points
         #points = np.array([X,Y,z])
-        #R11 = array_in[:,14] 
+        #R11 = array_in[:,14]  #coefficients of the rotation matrix
         #R12 = array_in[:,15] 
         #R13 = array_in[:,16]
         #R21 = array_in[:,17] 
@@ -64,24 +64,25 @@ def cones_generator(a, p, xmin, xmax, ymin, ymax, Lmax=5):
         #R31 = array_in[:,20]
         #R32 = array_in[:,21] 
         #R33 = array_in[:,22]
-        x_t = np.multiply(u,a[:,14])+ np.multiply(v,a[:,15]) + np.multiply(w,a[:,16])
-        y_t = np.multiply(u,a[:,17])+ np.multiply(v,a[:,18]) + np.multiply(w,a[:,19])
-        z_t = np.multiply(u,a[:,20])+ np.multiply(v,a[:,21]) + np.multiply(w,a[:,22])
-        x_t = x_t - a[:,2]
-        y_t = y_t - a[:,3]
-        z_t = z_t - a[:,4]
+        x_t = np.multiply(u,a[:,14])+ np.multiply(v,a[:,15]) + np.multiply(w,a[:,16]) #rotated x point
+        y_t = np.multiply(u,a[:,17])+ np.multiply(v,a[:,18]) + np.multiply(w,a[:,19]) #rotated y point
+        z_t = np.multiply(u,a[:,20])+ np.multiply(v,a[:,21]) + np.multiply(w,a[:,22]) #rotated z point
+        x_t = x_t - a[:,2] #translated x point
+        y_t = y_t - a[:,3] #translated y point
+        z_t = z_t - a[:,4] #translated z point
         imin = np.multiply(pr,N)
         imax = np.add(N,imin)
         points_trn[imin:imax] = np.transpose(np.array([x_t,y_t,z_t]))
-        print(f'{pr+1}points complete')
+        print(f'\r{pr+1}points complete', end = '', flush = True)
 
     #for i in range[r]:
         #cond = points_trn[i][0]<Lmax & points_trn[i][1]<Lmax & points_trn[i][2]<Lmax
         #points_trn[i] = np.where(cond, points_trn[i],0)    
     #points_trn = np.where(np.max(points_trn)<Lmax, points_trn, [0,0,0]))
+    print(f'\n plotted {np.multiply(P,N)} points')
     return points_trn
 #test data
-N = 3
+N = 1000
 theta = np.pi*np.linspace(20,80, N)/180
 x1 = np.linspace(0,0, N)
 y1 = np.linspace(0,0, N)
@@ -137,11 +138,5 @@ ax.quiver(0, 0, 0, i[0], i[1], i[2], color = 'b')
 ax.quiver(0, 0, 0, j[0], j[1], j[2], color = 'y')
 ax.quiver(0, 0, 0, k[0], k[1], k[2], color = 'g')
 
-#ax.scatter(x, y, z)
-#ax.scatter(x,y,np.linspace(0,0,np.size(x)))
-
-#ax.scatter(x2,y2,z2)
-#ax.scatter(points_rot[0],points_rot[1],points_rot[2])
 ax.scatter(points[:,0], points[:,1], points[:,2])
-ax.plot(np.linspace(0,0,50),np.linspace(0,5,50),np.linspace(0,5,50))
 ax.view_init(45,45)
