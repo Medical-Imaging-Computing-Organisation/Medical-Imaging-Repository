@@ -39,11 +39,11 @@ def cones_generator(a, p, xmin, xmax, ymin, ymax, Lmax=5):
     x = np.linspace(xmin, xmax, p)
     y = np.linspace(ymin, ymax, p)
     grid = np.meshgrid(x,y)
-    P = np.square(p)
     x = np.ndarray.flatten(grid[0])
     y = np.ndarray.flatten(grid[1])
 
     N, M = np.shape(a)
+    P = np.square(p)
     r = np.multiply(np.square(P),N)
     points_trn = np.zeros((r, 3))
     for pr in range(P):
@@ -79,10 +79,10 @@ def cones_generator(a, p, xmin, xmax, ymin, ymax, Lmax=5):
         #cond = points_trn[i][0]<Lmax & points_trn[i][1]<Lmax & points_trn[i][2]<Lmax
         #points_trn[i] = np.where(cond, points_trn[i],0)    
     #points_trn = np.where(np.max(points_trn)<Lmax, points_trn, [0,0,0]))
-    print(f'\n plotted {np.multiply(P,N)} points')
+    print(f'\n plotted {np.size(points_trn)}points')
     return points_trn
 #test data
-N = 1000
+N = 10000
 theta = np.pi*np.linspace(20,80, N)/180
 x1 = np.linspace(0,0, N)
 y1 = np.linspace(0,0, N)
@@ -114,7 +114,7 @@ array_in_test[:,4] = z1
 
 points = cones_generator(array_in_test, 10, -5, 5, -5, 5)
 
-
+'''
 #diagnostic 3D plot
 R=5
 #phi=(np.pi/180)*(45)
@@ -140,3 +140,4 @@ ax.quiver(0, 0, 0, k[0], k[1], k[2], color = 'g')
 
 ax.scatter(points[:,0], points[:,1], points[:,2])
 ax.view_init(45,45)
+'''
