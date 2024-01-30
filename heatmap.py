@@ -2,12 +2,12 @@
 
 # importing required libraries
 
-import numba
 from numba import njit
 import numpy as np
 # import cupy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
+from timeit import default_timer as timer
 
 
 try:
@@ -33,30 +33,33 @@ data = np.zeros((dnsy, dnsy, dnsy))  # empty dataset
 # index = (0, 0, 0)
 # print(data[index], "loc", h[index], v[index], d[index])
 
-@njit
-def cone_something(h, v, d, xyz):
-    '''Generating xyz points, to be replaced'''
-    y, z = np.linspace(-lim, lim, 2*dnsy), np.linspace(-lim, lim, 2*dnsy)
-    np.random.shuffle(y)
-    x = 2*np.sqrt(y**2+z**2)-2.5
-    cone_points = np.vstack((x, y, z)).T
-    cone_points = np.delete(cone_points, np.where(abs(cone_points) > lim)[0], axis=0)
-    
+
+# @njit(parallel=True)
+# @njit
+def voxel_fit(h, v, d, xyz):
+
     '''Fitting into voxels'''
     # usually cone_points will be xyz
-    data1 = np.zeros((dnsy, dnsy, dnsy))  # temporary dataset
-    cs = np.digitize(cone_points, h[0, :, 0]+voxel_r, right=True)
+    data1 = np.zeros(data.shape)  # temporary dataset
+    cs = np.digitize(xyz, h[0, :, 0]+voxel_r, right=True)
     # returns indices for xyz bins to fit into voxels
     # data1[cs[:, 0], cs[:, 1], cs[:, 2]] = 1  # if no dupe
-    np.add.at(data1, (cs[:, 0], cs[:, 1], cs[:, 2]), 1)
+    np.add.at(data1, (cs[:, 0], cs[:, 1], cs[:, 2]), 1)  # if dupe
+    # for abc in cs:  #njit friendly version
+    #     data1[abc[0], abc[1], abc[2]] += 1
     # adds 1 to every voxel specified, including duplicate indices
     return data1
 
-
+start=timer()
 for a in range(30):  # for now one cone is repeated
-    xyz = []
-    data += cone_something(h, v, d, xyz)
-
+    '''Generating xyz points, to be replaced'''
+    y, z = np.linspace(-lim, lim, 10*dnsy), np.linspace(-lim, lim, 10*dnsy)
+    np.random.shuffle(y)
+    x = 2*np.sqrt(y**2+z**2)-2.5
+    cone_points = np.vstack((x, y, z)).T
+    xyz = np.delete(cone_points, np.where(np.abs(cone_points) > lim)[0], axis=0)
+    data += voxel_fit(h, v, d, xyz)
+print(timer()-start)
 
 ''' Drawing all that '''
 fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(12, 6),
@@ -72,7 +75,8 @@ try:  # Colour map creation in try to prevent recreation error
     plt.colormaps.register(cmap=map_object)
 except ValueError:
     pass
-XYZ = ax[1].scatter(h, v, d, marker='s', s=100, c=data, cmap="YlOrRd_alpha2")
+
+XYZ = ax[1].scatter(h, v, d, marker='s', s=2000/dnsy, c=data, cmap="YlOrRd_alpha2")
 plt.colorbar(XYZ, location='left')
 
 # ax[1].voxels(np.ones(data.shape), alpha=0.12, edgecolor="k", shade=True)  # Voxel visualization
