@@ -8,6 +8,7 @@ Created on Thu Jan 25 15:50:45 2024
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from numba import njit
 
 # Function parameters (change as required)
 tau = 1000000000
@@ -149,6 +150,7 @@ def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Pa
         # Returning first (Energy-Time) array when applicable
         return arr1
 
+#@njit
 def find_coincidences(tau, arr1, arr2):
     '''
     @author = Alfie
@@ -185,14 +187,11 @@ def find_coincidences(tau, arr1, arr2):
 
     # calculate the average increase in t between each consecutive event in arr2
     ave_tstep2 = (arr2[-1, 1] - arr2[0, 1]) / arr2.shape[0]
-    print(ave_tstep2)
     # determine the region to examine for coincidences (time_width = 1.5 * tau)
     test_window_size = int(1.5 * tau / ave_tstep2) # in dimensions of indices
-    print(test_window_size)
-
-    output_arr = np.empty(2)
     
-    print(min(arr1.shape[0], arr2.shape[0]) - test_window_size)
+    output_arr = np.ndarray((arr1.shape[0], test_window_size, 2), dtype=np.ndarray)
+    print(output_arr)
 
     for i in range(test_window_size, min(arr1.shape[0], arr2.shape[0]) - test_window_size):
         # iterate over every event in arr1
@@ -232,15 +231,17 @@ def find_coincidences(tau, arr1, arr2):
        # delta_t1_arr = np.full(coinc_events.shape[0], delta_t1)
 
         # package up the info we want about each coincident pair of events
-        pair_info = np.empty((coinc_events.shape[0], 2))
+        pair_info = np.zeros((coinc_events.shape[0], 2))
         pair_info[:,0] = t1_arr # time of event 1
         pair_info[:,1] = coinc_events[:,1] # time of event 2
        # pair_info[:,2] = delta_t1_arr # uncertainty on time of event 1
        # pair_info[:,3] = coinc_events[:,4] # uncertainty on time of event 2
 
-        # stack this set of coincident pairs onto the end of output_arr
-        output_arr = np.vstack((output_arr, pair_info))
-       # print(output_arr[1:])
+        output_arr[i] = np.delete(output_arr[i], slice(pair_info.shape[0], None), axis=0)
+        print(output_arr)
+        print(pair_info)
+        output_arr[i] = pair_info
+        print(output_arr[1:])
 
     return output_arr[1:]
 
