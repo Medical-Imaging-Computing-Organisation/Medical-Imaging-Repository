@@ -190,7 +190,7 @@ def find_coincidences(tau, arr1, arr2):
     # determine the region to examine for coincidences (time_width = 1.5 * tau)
     test_window_size = int(1.5 * tau / ave_tstep2) # in dimensions of indices
     
-    output_arr = np.ndarray((arr1.shape[0], test_window_size, 2), dtype=np.ndarray)
+    output_arr = np.empty(arr1.shape[0], dtype=np.ndarray)
     print(output_arr)
 
     for i in range(test_window_size, min(arr1.shape[0], arr2.shape[0]) - test_window_size):
@@ -236,8 +236,7 @@ def find_coincidences(tau, arr1, arr2):
         pair_info[:,1] = coinc_events[:,1] # time of event 2
        # pair_info[:,2] = delta_t1_arr # uncertainty on time of event 1
        # pair_info[:,3] = coinc_events[:,4] # uncertainty on time of event 2
-
-        output_arr[i] = np.delete(output_arr[i], slice(pair_info.shape[0], None), axis=0)
+        
         print(output_arr)
         print(pair_info)
         output_arr[i] = pair_info
