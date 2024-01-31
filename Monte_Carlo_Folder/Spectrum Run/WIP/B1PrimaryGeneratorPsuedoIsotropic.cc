@@ -88,24 +88,49 @@ void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
 
-  
+  //setting a vector representing the detector position
   G4ThreeVector d1position = G4ThreeVector(20, 20, 20); 
-
+  G4ThreeVector d2position = G4ThreeVector(-15, -15, 15);   
+      
+  //Setting detector sizes
   G4double d1size = 2.0; 
-
-
+  G4double d2size = 2.0; 
+    
+  //Calculating detector distances, polar and azimuthial angles
   G4double d1_r = d1position.mag(); 
   G4double d1_theta = d1position.theta(); 
   G4double d1_phi = d1position.phi(); 
   
+  G4double d2_r = d2position.mag(); 
+  G4double d2_theta = d2position.theta(); 
+  G4double d2_phi = d2position.phi(); 
 
+  //Using tan approximation to calculate an approximate angular deviation
   G4double d1_theta_max = d1size/d1_r;  
-  G4double d1_phi_max = d1_theta_max; 
+  G4double d1_phi_max = d1_theta_max;  
   
-  std::cout << "Angular deviation in polar and azimuthial: " << d1_theta_max << " & " << d1_phi_max << std::endl;
+  G4double d2_theta_max = d2size/d2_r;  
+  G4double d2_phi_max = d2_theta_max; 
   
-  G4double polarAngle = d1_theta + 2*(G4UniformRand()-0.5)*d1_theta_max; 
-  G4double azimuthialAngle = d1_phi + 2*(G4UniformRand()-0.5)*d1_phi_max;
+  std::cout << "" << std::endl;
+  std::cout << "Angular deviation in polar and azimuthial for detector 1: " << d1_theta_max << " & " << d1_phi_max << std::endl;
+  std::cout << "Angular deviation in polar and azimuthial for detector 2: " << d2_theta_max << " & " << d2_phi_max << std::endl; 
+  
+  //Randomly generating a polar and azimuthial angle within the deviation
+  G4double r1 = G4UniformRand(); 
+  G4double polarAngle = 0;
+  G4double azimuthialAngle =0; 
+  
+  if(r1 < 0.5)
+  {
+    polarAngle = d1_theta + 2*(G4UniformRand()-0.5)*d1_theta_max; 
+    azimuthialAngle = d1_phi + 2*(G4UniformRand()-0.5)*d1_phi_max;
+  } 
+  else
+  {
+    polarAngle = d2_theta + 2*(G4UniformRand()-0.5)*d2_theta_max; 
+    azimuthialAngle = d2_phi + 2*(G4UniformRand()-0.5)*d2_phi_max;
+  }
   
   std::cout << "Random particle momentum in polar: Theta & Phi: " << polarAngle << " & " << azimuthialAngle << std::endl;
   
