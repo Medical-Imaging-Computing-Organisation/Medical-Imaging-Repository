@@ -11,10 +11,31 @@ from pathlib import Path
 from numba import njit
 from numba import prange
 
+# Generating test data for Alfie
+# Format [[detector index, energy, time, delta E, delta t], ...] for each detector
+
+# Detector 1 
+detector1_fake_arr = np.ndarray((4000000,5), dtype=np.float32)
+detector1_fake_arr[:,0] = 0
+detector1_fake_arr[:,1] = 662
+detector1_fake_arr[:,2] = np.arange(1414, 4001414, 1)
+detector1_fake_arr[:,3] = np.random.rand(4000000)
+detector1_fake_arr[:,4] = np.random.rand(4000000)
+
+detector2_fake_arr = np.ndarray((4000000,5), dtype=np.float32)
+detector2_fake_arr[:,0] = 1
+detector2_fake_arr[:,1] = 662
+detector2_fake_arr[:1000000,2] = np.arange(1414.2, 1001414.2, 1) # 0.2 time units apart for the first 1 million data points
+detector2_fake_arr[1000000:2000000,2] = np.arange(2414, 1002414, 1) # 1000 time units apart for the second 1 million data points
+detector2_fake_arr[2000000:3000000,2] = np.arange(2001414.3, 3001414.3, 1) # 0.3 time units apart for the third 1 million data points
+detector2_fake_arr[3000000:4000000,2] = np.arange(8001414.3, 9001413.3, 1) # a lot of time units apart for the third 1 million data points
+detector2_fake_arr[:,3] = np.random.rand(4000000)
+detector2_fake_arr[:,4] = np.random.rand(4000000)
+
 # Function parameters (change as required)
 tau = 1000000000
 Delimiter = ','
-Number_of_Detectors = 1
+Number_of_Files = 1
 Header = 0
 # Fill in the location and name of your energy-time data CSV file
 Folder_Path = 'C:/Users/alfie/OneDrive/Documents/UoB/Y3 S2/Medical Imaging Group Study'
@@ -192,10 +213,12 @@ def find_coincidences(tau, arr1, arr2, output_arr):
         # iterate over every event in arr1
         # exclude events near the start and end to avoid having to make a comparison every loop
         # also exclude events beyond the length of arr2 (if arr2 < arr1)
+        
+        # define a corresponding index j in arr2
+        j = i + (ave_tstep1 / ave_tstep2) * i
 
         # extract time information from the i^th event
-        t1 = arr1[i, 1]
-        print(t1)
+        t1 = arr1[i, 2]
        # delta_t1 = arr1[i, 4]
 
         # calculate limits of the coincidence window for the i^th event
@@ -203,8 +226,8 @@ def find_coincidences(tau, arr1, arr2, output_arr):
         t_min = t1 - tau
 
         # calculate limits of the testing window for the i^th event
-        test_max = int(i + 0.5 * test_window_size)
-        test_min = int(i - 0.5 * test_window_size)
+        test_max = int(j + 0.5 * test_window_size)
+        test_min = int(j - 0.5 * test_window_size)
 
         # fill arrays with the limit values
         t_max_arr = np.full(test_max - test_min, t_max)
@@ -212,24 +235,26 @@ def find_coincidences(tau, arr1, arr2, output_arr):
 
         # slice arr2 between the test window limits
         test_window = arr2[test_min : test_max]
+        #print(test_window)
         # extract the time info of all events in the test window
-        t2_arr = test_window[:, 1]
+        t2_arr = test_window[:, 2]
        # delta_t2_arr = test_window[:, 4]
 
         # find all indices in t2_arr where t2 falls within the coincidence window
-        coin = np.where(((t_min_arr <= t2_arr) & (t_max_arr >= t2_arr)))
+        coin = np.where(((t_min_arr <= t2_arr) & (t_max_arr >= t2_arr))) # alfie don't forget to add uncertainties back in here for future data
         # retrieve the events associated with those indices
         coinc_events = test_window[coin]
-
+        print(coinc_events)
         # fill arrays with the values t1 and delta_t1, length = no. of coincidences
         #t1_arr = np.full(coinc_events.shape[0], t1)
         column0 = np.empty(test_window_size)
-        column0[:coinc_events.shape[0]] = t1
-        column0[coinc_events.shape[0]:] = 0
-        print(column0)
+        column0[:coinc_events[0].size] = t1
+        column0[coinc_events[0].size:] = 0
+        #print(column0)
         column1 = np.empty(test_window_size)
-        column1[:coinc_events.shape[0]] = coinc_events[:,1]
-        column1[coinc_events.shape[0]:] = 0
+        if coinc_events.size > 0: 
+            column1[:coinc_events[0].size] = coinc_events[:,2]
+            column1[coinc_events[0].size:] = 0
        # delta_t1_arr = np.full(coinc_events.shape[0], delta_t1)
 
         # package up the info we want about each coincident pair of events
@@ -241,26 +266,6 @@ def find_coincidences(tau, arr1, arr2, output_arr):
        # pair_info[:,2] = delta_t1_arr # uncertainty on time of event 1
        # pair_info[:,3] = coinc_events[:,4] # uncertainty on time of event 2
 
-        print(output_arr[i])
-        print(pair_info)
         output_arr[i] = pair_info
-        print(output_arr[i])
-        print(output_arr[1:])
 
-    return output_arr[1:]
-
-# this code is just for the data format in merged_nodelay.csv
-master_array = CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Path, ETFile0_Name, None, None, None, None, None, None, None, None, None, Header)[0]
-#print(master_array)
-arr_det0 = master_array[0:3113656]
-#print(arr_det0)
-arr_det1 = master_array[3113657:]
-#print(arr_det1)
-
-# calculate the average increase in t between each consecutive event in arr2
-ave_tstep2 = (arr_det1[-1, 1] - arr_det1[0, 1]) / arr_det1.shape[0]
-# determine the region to examine for coincidences (time_width = 1.5 * tau)
-test_window_size = int(1.5 * tau / ave_tstep2) # in dimensions of indices
-
-output_arr = np.ndarray((arr_det0.shape[0], test_window_size, 2), dtype=np.float32)
-print(find_coincidences(tau, arr_det0, arr_det1, output_arr))
+    return output_arr
