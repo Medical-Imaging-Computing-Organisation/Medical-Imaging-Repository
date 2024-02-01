@@ -7,10 +7,10 @@ Created on Tue Jan 30 14:07:55 2024
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
-from numba import njit
-from timeit import default_timer as timer
-import psutil
-import os
+# from numba import njit
+# from timeit import default_timer as timer
+# import psutil
+# import os
 
 try:
     plt.close()
@@ -26,10 +26,10 @@ Function 4 (Richard) Generate set of points corresponding to cones:
 
 #if we had a single xyz point, this is the operation we want to carry out. 
 
-def cone(x,y,theta):
-    z=np.sqrt(np.add(np.square(x),np.square(y)))
-    z=np.einsum('jk,i',z,1/np.tan(theta))
-    return z
+# def cone(x,y,theta):
+#     z=np.sqrt(np.add(np.square(x),np.square(y)))
+#     z=np.einsum('jk,i',z,1/np.tan(theta))
+#     return z
     
 #since N>P, for loop through P instead of N, apply N using Numpy for each xyz row of points
 
@@ -64,7 +64,9 @@ def cones_generator(a, p, xmin, xmax, ymin, ymax, Lmax=2.5):
     u, v = np.meshgrid(x, y)
     r = np.multiply(p**2,a.shape[0])
     theta = a[:, 0]
-    w = cone(u, v, theta)
+    # w = cone(u, v, theta)
+    w=np.sqrt(np.add(np.square(u),np.square(v)))
+    w=np.einsum('jk,i',w,1/np.tan(theta))
     
     vector = np.array([np.tile(u, (w.shape[0],1,1)),
                         np.tile(v, (w.shape[0],1,1)), w]).T
@@ -77,11 +79,11 @@ def cones_generator(a, p, xmin, xmax, ymin, ymax, Lmax=2.5):
     vector += a[:, 2:5]
     vector = vector.reshape((r, 3))
     vector = np.delete(vector, np.where(np.abs(vector)>Lmax)[0], axis=0)
-    lmu = process.memory_info().rss - base_memory_usage
-    print(f'memory used {lmu}')
+    # lmu = process.memory_info().rss - base_memory_usage
+    # print(f'memory used {lmu}')
     return vector
 #test data
-N = 10000
+N = 1000
 theta = np.pi*np.linspace(20,50, N)/180
 x1 = np.linspace(0,0, N)
 y1 = np.linspace(-2,-2, N)
@@ -109,25 +111,22 @@ array_in_test[:,4] = z1
 
 
 ''' Building voxel grid '''
-dnsy = 51  # number density operator
-lim = 2.5  # extension of area in all directions from origin
-voxel_r = lim/dnsy  # voxel radius
-x = np.linspace(-lim+voxel_r, lim-voxel_r, dnsy, endpoint=True)
-y, z = x, x  # cube dimensions
-h, v, d = np.meshgrid(x, y, z, sparse=False)  # Horizontal, vertical, depth
-data = np.zeros((dnsy, dnsy, dnsy))  # empty dataset
-# data = np.arange(1, 1+dnsy**3).reshape(dnsy, dnsy, dnsy)
-# index = (0, 0, 0)
-# print(data[index], "loc", h[index], v[index], d[index])
+def build_voxels(dnsy=51, lim=2.5):
+    # dnsy number density operator
+    # lim  extension of area in all directions from origin
+    voxel_r = lim/dnsy  # voxel radius
+    x = np.linspace(-lim+voxel_r, lim-voxel_r, dnsy, endpoint=True)
+    y, z = x, x  # cube dimensions
+    h, v, d = np.meshgrid(x, y, z, sparse=False)  # Horizontal, vertical, depth
+    data = np.zeros((dnsy, dnsy, dnsy))  # empty dataset
+    return h, v, d, data, voxel_r, dnsy, lim
 
+h, v, d, data, voxel_r, dnsy, lim = build_voxels(51, 2.5)
 
-# @njit(parallel=True)
-# @njit
-def voxel_fit(h, v, d, xyz):
-
+def voxel_fit(h, v, d, xyz, shape, voxel_r):
     '''Fitting into voxels'''
     # usually cone_points will be xyz
-    data1 = np.zeros(data.shape)  # temporary dataset
+    data1 = np.zeros(shape)  # temporary dataset
     cs = np.digitize(xyz, h[0, :, 0]+voxel_r, right=True)
     # returns indices for xyz bins to fit into voxels
     np.add.at(data1, (cs[:, 1], cs[:, 0], cs[:, 2]), 1)  # if dupe
@@ -135,18 +134,18 @@ def voxel_fit(h, v, d, xyz):
     return data1
 
 
-process = psutil.Process(os.getpid())
-base_memory_usage = process.memory_info().rss
-start = timer()
+# process = psutil.Process(os.getpid())
+# base_memory_usage = process.memory_info().rss
+# start = timer()
 points = cones_generator(array_in_test, 100, -2.5, 2.5, -2.5, 2.5)
-data = voxel_fit(h, v, d, points)
+data = voxel_fit(h, v, d, points, data.shape, voxel_r)
 
 # for n in np.linspace(0, N, 20):
 #     points = cones_generator(array_in_test[int(n):int(n+N/20)], 100, -2.5, 2.5, -2.5, 2.5)
 #     data += voxel_fit(h, v, d, points)
-print(f"{timer()-start}", "seconds")
-lmu = process.memory_info().rss - base_memory_usage
-print(f'memory used {lmu}')
+# print(f"{timer()-start}", "seconds")
+# lmu = process.memory_info().rss - base_memory_usage
+# print(f'memory used {lmu}')
 
 
 ''' Drawing all that '''
@@ -167,10 +166,7 @@ except ValueError:
 XYZ = ax[1].scatter(h, v, d, marker='s', s=2000/dnsy, c=data, cmap="YlOrRd_alpha2")
 plt.colorbar(XYZ, location='left')
 
-# ax[1].voxels(np.ones(data.shape), alpha=0.12, edgecolor="k", shade=True)  # Voxel visualization
-'''Could be choosing to plot the hottest planes?
-    This actually needs to consider the hottest "volume"
-    otherwise different planes could be plotted'''
+
 mid = int((dnsy-1)/2)
 var = int(mid/5)
 # XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data, axis=0), cmap="YlOrRd")
