@@ -1,5 +1,6 @@
 # Imports
 import numpy as np
+import os
 import pandas as pd
 from pathlib import Path
 from numba import njit
@@ -35,7 +36,7 @@ Delimiter = ','
 Number_of_Files = 1
 Header = 0
 # Fill in the location and name of your energy-time data CSV file
-Folder_Path = 'C:/Users/chris/Documents/Medical_Physics_Group_Study/Lab_CSVs'
+Folder_Path = os.getcwd() # can leave this as is if your file is saved in the same folder as this script
 ETFile0_Name = 'merged_nodelay.csv'
 
 def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Path, ETFile0_Name, ETFile1_Name=None, ETFile2_Name=None, ETFile3_Name=None, ETFile4_Name=None, ETFile5_Name=None, ETFile6_Name=None, ETFile7_Name=None, File2_Name=None, File3_Name=None, Header=None):
@@ -181,26 +182,24 @@ arr_det0 = master_array[0:3113656]
 
 arr_det1 = master_array[3113657:]
 
+    
+ave_tstep1 = (arr_det0[-1, 1] - arr_det0[0, 1]) / arr_det0.shape[0]
+ave_tstep2 = (arr_det1[-1, 1] - arr_det1[0, 1]) / arr_det1.shape[0]
+print(ave_tstep2)
+t_step_ratio = ave_tstep1 / ave_tstep2
+print(t_step_ratio)
 
 
-
-tau = 1E8
+tau = 1E9
 # determine the region to examine for coincidences (time_width = 1.5 * tau)
-test_window_size = int(1.5 * tau / ave_tstep2) # in dimensions of indices
-output_arr = np.ndarray((arr1.shape[0], test_window_size, 2), dtype=np.float32)
+test_window_size = int(5 * tau / ave_tstep2) # in dimensions of indices
+print(test_window_size)
+temp_arr = np.ndarray((arr_det0.shape[0], test_window_size, 2), dtype=np.float32)
 
 
 @njit(parallel=True)
-def modified_b2b_func(tau, arr1, arr2, output_arr):
-    
-    
-    ave_tstep1 = (arr1[-1, 1] - arr1[0, 1]) / arr1.shape[0]
-    ave_tstep2 = (arr2[-1, 1] - arr2[0, 1]) / arr2.shape[0]
-    t_step_ratio = ave_tstep2 / ave_tstep1
-#     print(ave_tstep1)
-#     print(ave_tstep2)
-    
-    
+def modified_b2b_func(tau, arr1, arr2, temp_arr):
+
     # extract time information
     t1 = arr1[:, 1] # COMMENT THIS OUT FOR MAIN CODE
 #     t1 = arr1[i, 2]  # DECOMMENT THIS FOR MAIN CODE
@@ -212,30 +211,46 @@ def modified_b2b_func(tau, arr1, arr2, output_arr):
     t_max = t1 + tau
     t_min = t1 - tau
     
-    
-    for i in prange(test_window_size, min(arr1.shape[0], arr2.shape[0]) - test_window_size):
-        
-        
+    for i in prange(0, min(arr1.shape[0], arr2.shape[0]) - test_window_size):
+
+#         define corresponding index j in arr2        
+        j = t_step_ratio * i
+
 #         calculate limits of the testing window for the i^th event
-        test_max = int(i + 0.5 * test_window_size)
-        test_min = int(i - 0.5 * test_window_size)
-        
-    
+        test_max = int(j + 0.5 * test_window_size)
+        if test_max > min(arr1.shape[0], arr2.shape[0]):
+            test_max = min(arr1.shape[0], arr2.shape[0])
+        test_min = int(j - 0.5 * test_window_size)
+        if test_min < 0:
+            test_min = 0
+
         test_window = t2[test_min : test_max]
 
-#         coin = np.where( (t_min[i] <= test_window) & (t_max[i] >= test_window) )
-        coin = np.where( (t_min[i] <= t2) & (t_max[i] >= t2) )
+#        check which elements in test_window are between limits of tau
+        coin = np.where( (t_min[i] <= test_window) & (t_max[i] >= test_window) )
 
-        coinc_events = test_window[coin]
+        coinc_times = test_window[coin]
         
-        
+        column0 = np.empty(test_window_size)
+        column0[:coinc_times.size] = t1[i]
+        column0[coinc_times.size:] = 0
+        #print(column0)
+
+        column1 = np.empty(test_window_size) 
+        column1[:coinc_times.size] = coinc_times
+        column1[coinc_times.size:] = 0
+        #print(column1)
+
+        # package up the info we want about each coincident pair of events
+        pair_info = np.zeros((test_window_size, 2))
+        pair_info[:,0] = column0
+        pair_info[:,1] = column1
+        #print(pair_info)
+
+        temp_arr[i] = pair_info
        
-        
-        
-        
-        
+    return temp_arr
 
-modified_b2b_func(tau, arr_det0, arr_det1, output_arr)
-
-
-
+x = modified_b2b_func(tau, arr_det0, arr_det1, temp_arr)
+#print(np.reshape(x[x[:,-1] != 0], (x.shape[0], -1, x.shape[-1])))
+x = x[~np.all(x == 0, axis=2)]
