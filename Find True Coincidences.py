@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb  1 15:56:20 2024
-
-@author: alfie
-"""
-
 # Imports
 import numpy as np
 from numba import njit
@@ -73,12 +66,20 @@ arr1 = np.array([[1, 12, 1, 0.1, 0.2],
         [1, 10, 10, 0.1, 0.1]
         ])
 
-def find_true_coincidences(tau, E0, arr0, arr1, arr2=None, arr3=None, arr4=None, arr5=None, arr6=None, arr7=None):
+
+# pairing array needs to be of the form below, where detectors 0,1 are scatterers and 2,3 are absorbers
+# pair_arr = np.array([ [0, 2], [0, 3], [1, 2], [1, 3] ])
+
+
+
+def find_true_coincidences(tau, E0, pairing_arr, arr0, arr1, arr2=None, arr3=None, arr4=None, arr5=None, arr6=None, arr7=None):
     '''
-    For events observed in between two and eight detectors, this function finds
+    For events observed between two to eight detectors, this function finds
     which events occurred within a given coincidence window of each other AND
     could correspond to a single Compton scatter followed by a photoelectric
-    absorption using energy conservation rules.
+    absorption using energy conservation rules. The function considers pairs
+    of detectors that are pre-specified to prevent a factorial time complexity
+    with increasing detectors.
     
     Required Imports
     ----------
@@ -93,7 +94,9 @@ def find_true_coincidences(tau, E0, arr0, arr1, arr2=None, arr3=None, arr4=None,
         timestamps of the events in the input arrays.
     E0 : float
         Initial photon energy (=662 keV in most cases). Must be given in the
-        same units as the energies of the events in the input arrays
+        same units as the energies of the events in the input arrays.
+    pairing_arr: array
+        Array that contains the pairs of detectors to have coincidences investigated.
     arr0 : array
         Array of events which were observed in the first detector.
     arr1 : array
@@ -106,25 +109,55 @@ def find_true_coincidences(tau, E0, arr0, arr1, arr2=None, arr3=None, arr4=None,
     None.
 
     '''
-    ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
-    ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-    '''
-    ave_tstep2 = (arr2[-1, 2] - arr2[0, 2]) / arr2.shape[0]
-    ave_tstep3 = (arr3[-1, 2] - arr3[0, 2]) / arr3.shape[0]
-    ave_tstep4 = (arr4[-1, 2] - arr4[0, 2]) / arr4.shape[0]
-    ave_tstep5 = (arr5[-1, 2] - arr5[0, 2]) / arr5.shape[0]
-    ave_tstep6 = (arr6[-1, 2] - arr6[0, 2]) / arr6.shape[0]
-    ave_tstep7 = (arr7[-1, 2] - arr7[0, 2]) / arr7.shape[0]
-    '''
-
-    # determine the region in arr1 to examine for coincidences
-    test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
-    print(test_window_size)
+    
+    # define tstep array, containing both the ave_tstep and array itself for future use
+    ave_tstep_arr = np.ndarray((8,2), dtype=np.ndarray)
+    
+    ave_tstep_arr[0][0] = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
+    ave_tstep_arr[0][1] = arr0
+    ave_tstep_arr[1][0] = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
+    ave_tstep_arr[1][1] = arr1
+    
+    if arr2 != None:
+        ave_tstep_arr[2][0] = (arr2[-1, 2] - arr2[0, 2]) / arr2.shape[0]
+        ave_tstep_arr[2][1] = arr2
+    if arr3 != None:
+        ave_tstep_arr[3][0] = (arr3[-1, 2] - arr3[0, 2]) / arr3.shape[0]
+        ave_tstep_arr[3][1] = arr3
+    if arr4 != None:
+        ave_tstep_arr[4][0] = (arr4[-1, 2] - arr4[0, 2]) / arr4.shape[0]
+        ave_tstep_arr[4][1] = arr4
+    if arr5 != None:
+        ave_tstep_arr[5][0] = (arr5[-1, 2] - arr5[0, 2]) / arr5.shape[0]
+        ave_tstep_arr[5][1] = arr5
+    if arr6 != None:
+        ave_tstep_arr[6][0] = (arr6[-1, 2] - arr6[0, 2]) / arr6.shape[0]
+        ave_tstep_arr[6][1] = arr6
+    if arr7 != None:
+        ave_tstep_arr[7][0] = (arr7[-1, 2] - arr7[0, 2]) / arr7.shape[0]
+        ave_tstep_arr[7][1] = arr7
+        
+    # define pairing info array, containing all the information about the detector pairing
+    pairing_info = np.ndarray((pairing_arr.shape[0], 5), dtype=np.ndarray)
+    
+    # iterate through each detector pairing and extract all required information from them
+    for k in range(0, pairing_arr.shape[0]):
+        pairing_info[k][0] = ave_tstep_arr[ int(pairing_arr[k][0]) ][0]
+        pairing_info[k][1] = ave_tstep_arr[ int(pairing_arr[k][1]) ][0]
+        pairing_info[k][2] = int(5 * tau / pairing_info[k][1])
+        pairing_info[k][3] = ave_tstep_arr[ int(pairing_arr[k][0]) ][1]
+        pairing_info[k][4] = ave_tstep_arr[ int(pairing_arr[k][1]) ][1]
+    
+   
+    
+    
     # define an array to contain the coincident events
     temp_arr = np.ndarray((arr0.shape[0], test_window_size, 4), dtype=np.float32) 
     
+    
+    # internal function for finding the coincidences between a detector pair
     @njit(parallel=True)
-    def find_time_coincidences(tau, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1):
+    def find_time_coincidences(tau, test_window_size, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1, arr0_index, arr1_index):
         
         tstep_ratio_01 = ave_tstep0 / ave_tstep1
         
@@ -139,7 +172,7 @@ def find_true_coincidences(tau, E0, arr0, arr1, arr2=None, arr3=None, arr4=None,
         t_min = t0 - tau - delta_t0
         
         # define for use later
-        package = np.empty((test_window_size, 4))
+        package = np.empty((test_window_size, 6))
         column0 = np.empty(test_window_size)
         column1 = np.empty(test_window_size)
         column2 = np.empty(test_window_size)
@@ -186,14 +219,38 @@ def find_true_coincidences(tau, E0, arr0, arr1, arr2=None, arr3=None, arr4=None,
             package[:, 1] = column1
             package[:, 2] = column2
             package[:, 3] = column3
+            package[:, 4] = arr0_index
+            package[:, 5] = arr1_index
 
             temp_arr[i] = package
        
         return temp_arr
     
-    x = find_time_coincidences(tau, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1)
-    # get rid of the zeros
-    x = x[~np.all(x == 0, axis=2)]
-    return x
+    # define an array to contain coincident events for all specified detector pairings
+    return_arr = np.empty((0, 6), dtype=np.float32)
+        
+        
+    # iterate through each detector pairing and find their coincidences - dynamic so cannot be numba'd
+    for j in range(0, pairing_arr.shape[0]):
+            
+        x_j = find_time_coincidences(tau, pairing_info[j][2], pairing_info[j][3], 
+                                        pairing_info[j][4], temp_arr, pairing_info[j][1], 
+                                        pairing_info[j][2], pairing_arr[j][0], pairing_arr[j][1])
+        
+        # remove zeros
+        x_j = x_j[~np.all(x_j == 0, axis=2)]
+        return_arr = np.vstack((return_arr, x_j))
+    
+    
+#     # determine the region in arr1 to examine for coincidences
+#     test_window_size_0 = int(5 * tau / ave_tstep1) # in dimensions of indices
+    
+    
+#     x = find_time_coincidences(tau, test_window_size_0, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1)
+#     # get rid of the zeros
+#     x = x[~np.all(x == 0, axis=2)]
+#     return x
 
-print(find_true_coincidences(tau, E0, arr0, arr1))
+    return return_arr
+
+# print(find_true_coincidences(tau, E0, arr0, arr1))
