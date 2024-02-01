@@ -44,18 +44,18 @@ def test_energy(theta, E0, Me):
 
 E2 = test_energy(theta, E0, Me)
 E1 = E0-E2
-array_in = np.empty((N,4), dtype=np.float32)
+array_in = np.empty((N,5), dtype=np.float32)
 #print(array_in)
 array_in[:,0] = E1
 array_in[:,1] = E2
-array_in[:,2] = scab[0]
-array_in[:,3] = scab[1]
+array_in[:,5] = scab[0]
+array_in[:,4] = scab[1]
 
 print(array_in)
 
 
 r, c = np.shape(array_in)
-a = np.empty((N,3), dtype=np.float32)
+a = np.empty((N,4), dtype=np.float32)
 def compton_function(a, array_in, E0, Me):
     '''
     Calculates the compton scattering angle from the energies 
@@ -70,9 +70,13 @@ def compton_function(a, array_in, E0, Me):
             E1: the energy deposited at the scatterer
         column 1 : float
             E2: the energy deposited at the aborber
-        column 2 : integer
+        column 2 : float
+            dE1 : scatterer energy uncertainty
+        column 3 : float
+            dE2 : absorber energy uncertainty
+        column 4 : integer
             Sc: the index of the scatterer
-        column 3 : integer
+        column 5 : integer
             Ab : the index of the absorber
             
     E0: float
@@ -95,8 +99,8 @@ def compton_function(a, array_in, E0, Me):
 
     '''#find an accepted value for Me and set it to a constant arg
     En = np.divide(Me,E0) #float
-    a[:,1] = array_in[:,2]
-    a[:,2] = array_in[:,3]
+    a[:,3] = array_in[:,4]
+    a[:,4] = array_in[:,5]
     a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
     a[:,0] = np.multiply(En, a[:,0])
     a[:,0] = np.subtract(1,a[:,0])
