@@ -14,8 +14,9 @@ from numba import njit
 from numba import prange
 from numba import set_num_threads
 
-import CSV_Multiple_Detector_File_Extraction as Ex
-import Find_True_Coincidences as Co
+# import CSV_Multiple_Detector_File_Extraction as Ex
+import CSV_Data_Extraction as Ex
+import Temporary_Find_True_Coincidences as Co
 import Function1 as F1
 import Function2 as F2
 import Function3 as F3
@@ -25,7 +26,7 @@ E0 = 200  # kev
 Me = 510.99895000  # kev
 File2 = None
 File3 = None
-tau = 1000000000
+tau = 1
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
@@ -33,10 +34,15 @@ ETFile0 = 'CSV1_D1.csv'  # ?
 File2 = 'CSV1_D2.csv'
 File3 = 'CSV1_D3.csv'
 File4 = 'CSV1_D4.csv'
-Number_of_Files = 1
+# Number_of_Files = 4
 
-fEx1, fEx2, fEx3 = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Files, Folder_Path,
-                                            ETFile0, ETFile2_Name=File2, ETFile3_Name=File3, ETFile4_Name=File4)
+# fEx = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Files, Folder_Path,
+#                             ETFile0, ETFile2_Name=File2, ETFile3_Name=File3, ETFile4_Name=File4)[0]
+arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
+arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, File2)
+arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, File3)
+arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, File4)
+
 # if File2 is not None:
 #     fEx1 = fEx[0]
 #     fEx2 = fEx[1]
@@ -44,14 +50,17 @@ fEx1, fEx2, fEx3 = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Fi
 #         fEx3 = fEx[2]
 # else:
 #     fEx1 = fEx[0]
-
-fCo = Co.find_true_coincidences(tau, E0, fEx1, fEx2)
+pair_arr = np.array([[0, 2], [0, 3], [1, 2], [1, 3]])
+fCo1 = Co.find_true_coincidences(tau, E0, pair_arr, arr0, arr1)
+fCo2 = Co.find_true_coincidences(tau, E0, pair_arr, arr0, arr2)
+fCo3 = Co.find_true_coincidences(tau, E0, pair_arr, arr0, arr3)
+fCo = np.vstack((fCo1, fCo2, fCo3))
 
 N, c = fCo.shape
 a = np.empty((N,4), dtype=np.float32)
 f1 = F1.compton_function(a, fCo, E0, Me)
 
-f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, fEx2)
+f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, arr2)
 
 # f1 = np.ones((4, 4))
 # f2 = np.ones((5, 31))
