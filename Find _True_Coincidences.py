@@ -147,22 +147,22 @@ def find_true_coincidences(tau, E0, pairing_arr, arr0, arr1, arr2=None, arr3=Non
     ave_tstep_arr[1][0] = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
     ave_tstep_arr[1][1] = arr1
     
-    if arr2 != None:
+    if arr2 is not None:
         ave_tstep_arr[2][0] = (arr2[-1, 2] - arr2[0, 2]) / arr2.shape[0]
         ave_tstep_arr[2][1] = arr2
-    if arr3 != None:
+    if arr3 is not None:
         ave_tstep_arr[3][0] = (arr3[-1, 2] - arr3[0, 2]) / arr3.shape[0]
         ave_tstep_arr[3][1] = arr3
-    if arr4 != None:
+    if arr4 is not None:
         ave_tstep_arr[4][0] = (arr4[-1, 2] - arr4[0, 2]) / arr4.shape[0]
         ave_tstep_arr[4][1] = arr4
-    if arr5 != None:
+    if arr5 is not None:
         ave_tstep_arr[5][0] = (arr5[-1, 2] - arr5[0, 2]) / arr5.shape[0]
         ave_tstep_arr[5][1] = arr5
-    if arr6 != None:
+    if arr6 is not None:
         ave_tstep_arr[6][0] = (arr6[-1, 2] - arr6[0, 2]) / arr6.shape[0]
         ave_tstep_arr[6][1] = arr6
-    if arr7 != None:
+    if arr7 is not None:
         ave_tstep_arr[7][0] = (arr7[-1, 2] - arr7[0, 2]) / arr7.shape[0]
         ave_tstep_arr[7][1] = arr7
         
@@ -180,8 +180,9 @@ def find_true_coincidences(tau, E0, pairing_arr, arr0, arr1, arr2=None, arr3=Non
    
     
     
-    # define an array to contain the coincident events
-    temp_arr = np.ndarray((arr0.shape[0], test_window_size, 4), dtype=np.float32) 
+    
+    
+    
     
     
     # internal function for finding the coincidences between a detector pair
@@ -261,6 +262,9 @@ def find_true_coincidences(tau, E0, pairing_arr, arr0, arr1, arr2=None, arr3=Non
         
     # iterate through each detector pairing and find their coincidences - dynamic so cannot be numba'd
     for j in range(0, pairing_arr.shape[0]):
+        
+        # define an array to contain the coincident events
+        temp_arr = np.ndarray((arr0.shape[0], pairing_info[j][2], 4), dtype=np.float32) 
             
         x_j = find_time_coincidences(tau, pairing_info[j][2], pairing_info[j][3], 
                                         pairing_info[j][4], temp_arr, pairing_info[j][1], 
