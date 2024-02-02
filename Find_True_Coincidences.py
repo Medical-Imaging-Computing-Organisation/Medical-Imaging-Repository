@@ -243,9 +243,7 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
 
     '''
     ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
-    print(ave_tstep0)
     ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-    print(ave_tstep1)
     '''
     ave_tstep2 = (arr2[-1, 2] - arr2[0, 2]) / arr2.shape[0]
     ave_tstep3 = (arr3[-1, 2] - arr3[0, 2]) / arr3.shape[0]
@@ -260,31 +258,54 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
     # define an array to contain the coincident events
     temp_arr = np.ndarray((arr0.shape[0], test_window_size, 4), dtype=np.float32) 
     
-    @njit(parallel=True)
+    #@njit(parallel=True)
     def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB):
         '''
+        @author = Alfie
+        
         Takes events observed in two detectors (A and B) and finds pairs which
-        pass the tau test and the E0 test
+        could correspond to a Compton scatter followed by a photoelectric
+        absorption.
+        
+        IMPORTANT NOTE - at the moment this function only works properly if
+        numba is not enabled! If you decomment the @njit line above, it will
+        break in ways I don't understand but am trying my best to fix.
 
         Parameters
         ----------
-        tau : TYPE
-            DESCRIPTION.
-        arrA : TYPE
-            DESCRIPTION.
-        arrB : TYPE
-            DESCRIPTION.
-        temp_arr : TYPE
-            DESCRIPTION.
-        ave_tstepA : TYPE
-            DESCRIPTION.
+        tau : float
+            time coincidence window.
+        epsilon: float
+            energy coincidence window.
+        E0 : float
+            initial photon energy.
+        arrA : array
+            array of events observed in detector A.
+        arrB : array
+            array of events observed in detector B.
+        temp_arr : array
+            empty array of shape (arrA.shape[0], test_window_size, 4) with dtype=np.float32
+        ave_tstepA : float
+            average increase in time between each index in arrA.
         ave_tstepB : TYPE
-            DESCRIPTION.
+            average increase in time between each index in arrB.
 
         Returns
         -------
-        temp_arr : TYPE
-            DESCRIPTION.
+        temp_arr : array
+            Array of valid coincident scatter-absorption event pairs. Format:
+                
+                [[E1, E2, delta_E1, delta_E2], 
+                 [E1, E2, delta_E1, delta_E2],
+                 ...]
+            
+            where E1 is the energy of the scattering event; E2 is the energy
+            of the absorption event; and delta_E1, delta_E2 are uncertainties
+            on those values.
+            
+            NOTE - temp_arr will contain many rows filled with zeros! These
+            are to be removed outside of this function before any further
+            operations are performed.
 
         '''
         tstep_ratio_AB = ave_tstepA / ave_tstepB
@@ -312,7 +333,7 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
         column2 = np.empty(test_window_size)
         column3 = np.empty(test_window_size)
 
-        for i in range(0, arrA.shape[0]):
+        for i in prange(0, arrA.shape[0]):
 
             # define corresponding index j in arrB    
             j = tstep_ratio_AB * i
@@ -329,49 +350,42 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
             test_window = arrB[test_min : test_max]
 
             # check which elements in test_window are between limits of tau
-            tau_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[i]) & (t_max[i] >= test_window[:,2] + delta_tB[i]) )
-            coinc_events = test_window[tau_test]
+            time_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[i]) & (t_max[i] >= test_window[:,2] + delta_tB[i]) )
+            coinc_events = test_window[time_test]
 
-            # extract energy information from events which passed tau test
+            # extract energy information from events which passed time test
             EB = coinc_events[:,1]
             delta_EB = coinc_events[:,3]
             
-            # apply energy conservation test to events which passed tau test
+            # apply energy conservation test to events which passed time test
             energy_test = np.where( (EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB) )
             valid_events = coinc_events[energy_test]
-            print(valid_events)
 
-            #TODO: make sure events are time ordered (scatter then absorb)
+            # group valid events by time occurred relative to event i in arrA
             
-            #events_before = valid_events[np.where(valid_events[:,2] < tA[i])]
-            #events_after = valid_events[np.where(valid_events[:,2] > tA[i])]
-
-            #TODO: add a way to get rid of pairs of events with E2 = 0
-
-            # energy of arr0 event
-            column0[:valid_events.shape[0]] = arrA[i, 1]
-            column0[valid_events.shape[0]:] = 0
+            events_before = valid_events[np.where(valid_events[:, 2] < tA[i])]
+            events_after = valid_events[np.where(valid_events[:, 2] >= tA[i])]
+            
+            # construct data columns to be added to the output array
             
             # energy of scatter event
-            #column0[:events_before.shape[0]] = events_before[:, 1]
-            #column0[events_before.shape[0]:valid_events.shape[0]] = arrA[i, 1]
-            #column0[valid_events.shape[0]:] = 0
-
-            # energy of arr1 events
-            column1[:valid_events.shape[0]] = valid_events[:, 1]
-            column1[valid_events.shape[0]:] = 0
+            column0[:events_before.shape[0]] = events_before[:, 1]
+            column0[events_before.shape[0]:valid_events.shape[0]] = arrA[i, 1]
+            column0[valid_events.shape[0]:] = 0
             
             # energy of absorption event
-            #column1[:events_before.shape[0]] = arrA[i, 1]
-            #column1[events_before.shape[0]:valid_events.shape[0]] = events_after[:, 1]
-            #column1[valid_events.shape[0]:] = 0
+            column1[:events_before.shape[0]] = arrA[i, 1]
+            column1[events_before.shape[0]:valid_events.shape[0]] = events_after[:, 1]
+            column1[valid_events.shape[0]:] = 0
 
-            # uncertainty on energy of arr0 event
-            column2[:valid_events.shape[0]] = arrA[i, 3]
+            # uncertainty on energy of scatter event
+            column2[:events_before.shape[0]] = events_before[:, 3]
+            column2[events_before.shape[0]:valid_events.shape[0]] = arrA[i, 3]
             column2[valid_events.shape[0]:] = 0
 
-            # uncertainties on energies of arr1 events
-            column3[:valid_events.shape[0]] = valid_events[:, 3]
+            # uncertainty on energy of absorption event
+            column3[:events_before.shape[0]] = arrA[i, 3]
+            column3[events_before.shape[0]:valid_events.shape[0]] = events_after[:, 3]
             column3[valid_events.shape[0]:] = 0
 
             # package up the columns
@@ -379,6 +393,10 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
             package[:, 1] = column1
             package[:, 2] = column2
             package[:, 3] = column3
+
+            # delete rows where photon was absorbed in its first interaction
+            noscat = np.where((column0 != 0) & (column1 - column3 < epsilon))[0]
+            package[noscat] = np.zeros(4)
 
             temp_arr[i] = package
 
