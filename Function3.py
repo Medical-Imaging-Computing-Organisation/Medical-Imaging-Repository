@@ -24,12 +24,15 @@ import numpy as np
 
 '''This function works as long as there are no duplicates in the
     function2 output of scatter index/absorber index pairs'''
+
+
 def PutEmTogether(f1, f2):
     f3 = np.zeros((f1.shape[0], f2.shape[1]))
     f3[:, 0:2] = f1[:, 0:2]  # theta and dtheta
-    idx = np.where((f1[:, 2:4]==f2[:, 29:31][:, None]).all(-1))[0]
+    idx = np.where((f1[:, 2:4] == f2[:, 29:31][:, None]).all(-1))[0][:f1.shape[0]]
     f3[:, 2:] = f2[idx, 0:29]  # rest of row
     return f3
+
 
 if __name__ == "__main__":
     f1 = np.ones((4, 4))
