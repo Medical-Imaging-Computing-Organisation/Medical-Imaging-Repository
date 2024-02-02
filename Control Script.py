@@ -14,34 +14,34 @@ from numba import njit
 from numba import prange
 from numba import set_num_threads
 
-import CSV_Multiple_Detector_File_Extraction.py as Ex
-import Coicidence as Co
-import Function1.py as F1
-import Function2.py as F2
-import Function3.py as F3
-import Function4HeatmapHybridVectorized.py as F4
+import CSV_Multiple_Detector_File_Extraction as Ex
+import Find_True_Coincidences as Co
+import Function1 as F1
+import Function2 as F2
+import Function3 as F3
+import Function4HeatmapHybridVectorized as F4
 
-E0 = 200 #kev
-Me = 510.99895000 #kev
+E0 = 200  # kev
+Me = 510.99895000  # kev
 File2 = None
 File3 = None
 tau = 1000000000
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'merged_nodelay.csv'
-Number_of_Files = 2
+ETFile0 = 'CSV1_D1.csv'  # ?
+Number_of_Files = 1
 
 fEx = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Files, Folder_Path, ETFile0, File2_Name=File2, File3_Name=File3)
-if File2 != None:
+if File2 is not None:
     fEx1 = fEx[0]
     fEx2 = fEx[1]
-    if File3 !=None:
+    if File3 is not None:
         fEx3 = fEx[2]
 else:
     fEx1 = fEx[0]
 
-fCo = Co.find_coincidences(tau, fEx1, fEx2)
+fCo = Co.find_true_coincidences(tau, E0, fEx1, fEx2)
 
 N, c = fCo.shape
 a = np.empty((N,4), dtype=np.float32)
@@ -49,6 +49,8 @@ f1 = F1.compton_function(a, fCo, E0, Me)
 
 f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, fEx2)
 
+# f1 = np.ones((4, 4))
+# f2 = np.ones((5, 31))
 f3 = F3.PutEmTogether(f1, f2)
 
 h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 2.5)
