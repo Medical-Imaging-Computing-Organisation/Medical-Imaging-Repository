@@ -67,9 +67,9 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
                                       np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4],2), 0.5)
         
             # Calculating angles for each pair
-            angle_arr[i,0] = np.arccos(vec_mat_arr[i,8]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle alpha
+            angle_arr[i,0] = np.arccos(vec_mat_arr[i,6]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle alpha
             angle_arr[i,1] = np.arccos(vec_mat_arr[i,7]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle beta
-            angle_arr[i,2] = np.arccos(vec_mat_arr[i,6]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle gamma
+            angle_arr[i,2] = np.arccos(vec_mat_arr[i,8]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle gamma
         
             # Generating rotation matrix elements for each pair
             vec_mat_arr[i,12] = np.cos(angle_arr[i,1]) * np.cos(angle_arr[i,2])
