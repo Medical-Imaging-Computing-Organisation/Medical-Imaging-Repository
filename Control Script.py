@@ -30,16 +30,20 @@ Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
 ETFile0 = 'CSV1_D1.csv'  # ?
+File2 = 'CSV1_D2.csv'
+File3 = 'CSV1_D3.csv'
+File4 = 'CSV1_D4.csv'
 Number_of_Files = 1
 
-fEx = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Files, Folder_Path, ETFile0, File2_Name=File2, File3_Name=File3)
-if File2 is not None:
-    fEx1 = fEx[0]
-    fEx2 = fEx[1]
-    if File3 is not None:
-        fEx3 = fEx[2]
-else:
-    fEx1 = fEx[0]
+fEx1, fEx2, fEx3 = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Files, Folder_Path,
+                                            ETFile0, ETFile2_Name=File2, ETFile3_Name=File3, ETFile4_Name=File4)
+# if File2 is not None:
+#     fEx1 = fEx[0]
+#     fEx2 = fEx[1]
+#     if File3 is not None:
+#         fEx3 = fEx[2]
+# else:
+#     fEx1 = fEx[0]
 
 fCo = Co.find_true_coincidences(tau, E0, fEx1, fEx2)
 
