@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb  1 15:56:20 2024
-
-@author: alfie
-"""
-
 # Imports
 import numpy as np
 from numba import njit
@@ -13,9 +6,9 @@ import pandas as pd
 from pathlib import Path
 
 # Parameters (remember to change based on units of your data)
-tau = 0.001 # time coincidence window
-epsilon = 0.01 # energy coincidence window
-E0 = 0.662 # initial photon energy
+# tau = 0.001 # time coincidence window
+# epsilon = 0.01 # energy coincidence window
+# E0 = 0.662 # initial photon energy
 '''
 arr0 = np.array([[0, 10, 1, 0.1, 0.1],
         [0, 10, 2, 0.1, 0.2],
@@ -126,91 +119,95 @@ def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Pa
                         arr3: [[Scatterer Index, Absorber Index, Ballpark Angular Uncertainty], ...]
                     
     '''
-    
+
     # Define location array, which will contain the paths for each Energy-Time CSV to be read
     ETLocation_Array = np.empty(8, dtype=np.ndarray)
-    
+
     # Define array
     arr1 = np.empty(Number_of_Detectors, dtype=np.ndarray)
-    
+
     # Forming base location path to folder containing CSVs
     BaseLocation = str(Path(Folder_Path))
-    
+
     # Forming full location path for the first Energy-Time CSV
     ETLocation_Array[0] = BaseLocation + "\\" + ETFile0_Name
-    
+
     # Forming full location paths for all other Energy-Time CSVs
     if ETFile1_Name != None:
         ETLocation_Array[1] = BaseLocation + "\\" + ETFile1_Name
-        
-    if ETFile2_Name != None:
+
+    if ETFile2_Name is not None:
         ETLocation_Array[2] = BaseLocation + "\\" + ETFile2_Name
-            
-    if ETFile3_Name != None:
+
+    if ETFile3_Name is not None:
         ETLocation_Array[3] = BaseLocation + "\\" + ETFile3_Name
-                
-    if ETFile4_Name != None:
+
+    if ETFile4_Name is not None:
         ETLocation_Array[4] = BaseLocation + "\\" + ETFile4_Name
-                    
-    if ETFile5_Name != None:
+
+    if ETFile5_Name is not None:
         ETLocation_Array[5] = BaseLocation + "\\" + ETFile5_Name
-                        
-    if ETFile6_Name != None:
+
+    if ETFile6_Name is not None:
         ETLocation_Array[6] = BaseLocation + "\\" + ETFile6_Name
-                            
-    if ETFile7_Name != None:
+
+    if ETFile7_Name is not None:
         ETLocation_Array[7] = BaseLocation + "\\" + ETFile7_Name
-    
-            
-    
+
+
+
     # Internal processing function for reading CSVs via Pandas
     def Read_CSV(Location, columns, Header, datatype):
         df = pd.read_csv(Location, sep=Delimiter, usecols=columns, header=Header, dtype=datatype)
         return df
-    
+
     # Iterate through each detector and extract Energy-Time data, populating an array for each
     for i in range(Number_of_Detectors):
         df = Read_CSV(str(ETLocation_Array[i]), [0,1,2,3,4], Header, np.float32)
         arr1[i] = df.values
-    
-    
-    
+
+
+
     # Conditional for Detector Location CSV
     if File2_Name != None:
-        
+
         # Form location path for Detector Position CSV
         CSV2Location = BaseLocation + "\\" + File2_Name
-        
+
         # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
         df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
         arr2_1 = df2_1.values
         df2_2 = Read_CSV(CSV2Location, [7], Header, str)
         arr2_2 = df2_2.values
         arr2 = np.hstack((arr2_1, arr2_2))
-            
+
         # Conditional for Detector Pairing CSV
         if File3_Name != None:
-            
+
             # Form location path for Detector Pairing CSV
             CSV3Location = BaseLocation + "\\" + File3_Name
-            
+
             # Read Detector Pairing CSV and populate numpy array with its data
             df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
             arr3 = df3.values
-                
+
             # Returning all 3 arrays when applicable
             return arr1, arr2, arr3
-            
+
         else:
             # Returning first 2 (Energy-Time and Detector Location) arrays when applicable
             return arr1, arr2
-            
+
     else:
         # Returning first (Energy-Time) array when applicable
         return arr1
 
-def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, arr4=None, arr5=None, arr6=None, arr7=None):
+def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr0_index, arr1_index):
     '''
+    
+    @author = Alfie
+    @coauthor = Chris
+    
     For events observed in between two and eight detectors, this function finds
     which events occurred within a given coincidence window of each other AND
     could correspond to a single Compton scatter followed by a photoelectric
@@ -234,8 +231,6 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
         Array of events which were observed in the first detector.
     arr1 : array
         Array of events which were observed in the second detector.
-    arr2-7 : arrays (optional)
-        Additional arrays giving events observed in more detectors.
 
     Returns
     -------
@@ -243,76 +238,92 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
 
     '''
     ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
-    print(ave_tstep0)
     ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-    print(ave_tstep1)
-    '''
-    ave_tstep2 = (arr2[-1, 2] - arr2[0, 2]) / arr2.shape[0]
-    ave_tstep3 = (arr3[-1, 2] - arr3[0, 2]) / arr3.shape[0]
-    ave_tstep4 = (arr4[-1, 2] - arr4[0, 2]) / arr4.shape[0]
-    ave_tstep5 = (arr5[-1, 2] - arr5[0, 2]) / arr5.shape[0]
-    ave_tstep6 = (arr6[-1, 2] - arr6[0, 2]) / arr6.shape[0]
-    ave_tstep7 = (arr7[-1, 2] - arr7[0, 2]) / arr7.shape[0]
-    '''
+    
     # determine the region in arr1 to examine for coincidences
     test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
 
     # define an array to contain the coincident events
-    temp_arr = np.ndarray((arr0.shape[0], test_window_size, 4), dtype=np.float32) 
+    temp_arr = np.ndarray((arr0.shape[0], test_window_size, 6), dtype=np.float32)
     
-    @njit(parallel=True)
-    def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB):
+    # define for use later
+    package = np.empty((arr0.shape[0], test_window_size, 6))
+    column0 = np.empty((arr0.shape[0], test_window_size))
+    column1 = np.empty((arr0.shape[0], test_window_size))
+    column2 = np.empty((arr0.shape[0], test_window_size))
+    column3 = np.empty((arr0.shape[0], test_window_size))
+
+    # @njit(parallel=True)
+    def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB, package, column0, column1, column2, column3):
         '''
+        @author = Alfie
+        
         Takes events observed in two detectors (A and B) and finds pairs which
-        pass the tau test and the E0 test
+        could correspond to a Compton scatter followed by a photoelectric
+        absorption.
+        
+        IMPORTANT NOTE - at the moment this function only works properly if
+        numba is not enabled! If you decomment the @njit line above, it will
+        break in ways I don't understand but am trying my best to fix.
 
         Parameters
         ----------
-        tau : TYPE
-            DESCRIPTION.
-        arrA : TYPE
-            DESCRIPTION.
-        arrB : TYPE
-            DESCRIPTION.
-        temp_arr : TYPE
-            DESCRIPTION.
-        ave_tstepA : TYPE
-            DESCRIPTION.
+        tau : float
+            time coincidence window.
+        epsilon: float
+            energy coincidence window.
+        E0 : float
+            initial photon energy.
+        arrA : array
+            array of events observed in detector A.
+        arrB : array
+            array of events observed in detector B.
+        temp_arr : array
+            empty array of shape (arrA.shape[0], test_window_size, 4) with dtype=np.float32
+        ave_tstepA : float
+            average increase in time between each index in arrA.
         ave_tstepB : TYPE
-            DESCRIPTION.
+            average increase in time between each index in arrB.
 
         Returns
         -------
-        temp_arr : TYPE
-            DESCRIPTION.
+        temp_arr : array
+            Array of valid coincident scatter-absorption event pairs. Format:
+                
+                [[E1, E2, delta_E1, delta_E2], 
+                 [E1, E2, delta_E1, delta_E2],
+                 ...]
+            
+            where E1 is the energy of the scattering event; E2 is the energy
+            of the absorption event; and delta_E1, delta_E2 are uncertainties
+            on those values.
+            
+            NOTE - temp_arr will contain many rows filled with zeros! These
+            are to be removed outside of this function before any further
+            operations are performed.
 
         '''
         tstep_ratio_AB = ave_tstepA / ave_tstepB
-        
+
         # extract time information from arrA and arrB
         tA = arrA[:, 2]
         #tB = arrB[:, 2]
         delta_tA = arrA[:, 4]
         delta_tB = arrB[:, 4]
-        
+
         # calculate limits of time coincidence window for each event in arrA
         t_max = tA + tau + delta_tA
         t_min = tA - tau - delta_tA
-        
+
         # extract energy information from arrA
         EA = arrA[:, 1]
         #EB = arrB[:, 1]
         delta_EA = arrA[:, 3]
         #delta_EB = arrB[:, 3]
-        
-        # define for use later
-        package = np.empty((test_window_size, 4))
-        column0 = np.empty(test_window_size)
-        column1 = np.empty(test_window_size)
-        column2 = np.empty(test_window_size)
-        column3 = np.empty(test_window_size)
 
-        for i in range(0, arrA.shape[0]):
+        
+
+        for i in prange(0, arrA.shape[0]):
 
             # define corresponding index j in arrB    
             j = tstep_ratio_AB * i
@@ -325,75 +336,74 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr2=None, arr3=None, a
             if test_min < 0:
                 test_min = 0
             #print(test_min, j, test_max)
-
             test_window = arrB[test_min : test_max]
 
             # check which elements in test_window are between limits of tau
-            tau_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[i]) & (t_max[i] >= test_window[:,2] + delta_tB[i]) )
-            coinc_events = test_window[tau_test]
+            time_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[i]) & (t_max[i] >= test_window[:,2] + delta_tB[i]) )
+            coinc_events = test_window[time_test]
 
-            # extract energy information from events which passed tau test
+            # extract energy information from events which passed time test
             EB = coinc_events[:,1]
             delta_EB = coinc_events[:,3]
-            
-            # apply energy conservation test to events which passed tau test
+
+            # apply energy conservation test to events which passed time test
             energy_test = np.where( (EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB) )
             valid_events = coinc_events[energy_test]
-            print(valid_events)
 
-            #TODO: make sure events are time ordered (scatter then absorb)
-            
-            #events_before = valid_events[np.where(valid_events[:,2] < tA[i])]
-            #events_after = valid_events[np.where(valid_events[:,2] > tA[i])]
+            # group valid events by time occurred relative to event i in arrA
 
-            #TODO: add a way to get rid of pairs of events with E2 = 0
+            events_before = valid_events[np.where(valid_events[:, 2] < tA[i])]
+            events_after = valid_events[np.where(valid_events[:, 2] >= tA[i])]
 
-            # energy of arr0 event
-            column0[:valid_events.shape[0]] = arrA[i, 1]
-            column0[valid_events.shape[0]:] = 0
-            
+            # construct data columns to be added to the output array
+
             # energy of scatter event
-            #column0[:events_before.shape[0]] = events_before[:, 1]
-            #column0[events_before.shape[0]:valid_events.shape[0]] = arrA[i, 1]
-            #column0[valid_events.shape[0]:] = 0
+            column0[i][:events_before.shape[0]] = events_before[:, 1]
+            column0[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 1]
+            column0[i][valid_events.shape[0]:] = 0
 
-            # energy of arr1 events
-            column1[:valid_events.shape[0]] = valid_events[:, 1]
-            column1[valid_events.shape[0]:] = 0
-            
             # energy of absorption event
-            #column1[:events_before.shape[0]] = arrA[i, 1]
-            #column1[events_before.shape[0]:valid_events.shape[0]] = events_after[:, 1]
-            #column1[valid_events.shape[0]:] = 0
+            column1[i][:events_before.shape[0]] = arrA[i, 1]
+            column1[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 1]
+            column1[i][valid_events.shape[0]:] = 0
 
-            # uncertainty on energy of arr0 event
-            column2[:valid_events.shape[0]] = arrA[i, 3]
-            column2[valid_events.shape[0]:] = 0
+            # uncertainty on energy of scatter event
+            column2[i][:events_before.shape[0]] = events_before[:, 3]
+            column2[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 3]
+            column2[i][valid_events.shape[0]:] = 0
 
-            # uncertainties on energies of arr1 events
-            column3[:valid_events.shape[0]] = valid_events[:, 3]
-            column3[valid_events.shape[0]:] = 0
+            # uncertainty on energy of absorption event
+            column3[i][:events_before.shape[0]] = arrA[i, 3]
+            column3[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 3]
+            column3[i][valid_events.shape[0]:] = 0
 
             # package up the columns
-            package[:, 0] = column0
-            package[:, 1] = column1
-            package[:, 2] = column2
-            package[:, 3] = column3
+            package[i, :, 0] = column0[i]
+            package[i, :, 1] = column1[i]
+            package[i, :, 2] = column2[i]
+            package[i, :, 3] = column3[i]
+            package[i, :, 4] = arr0_index
+            package[i, :, 5] = arr1_index
 
-            temp_arr[i] = package
+            # delete rows where photon was absorbed in its first interaction
+            noscat = np.where((column0[i] != 0) & (column1[i] - column3[i] < epsilon))[0]
+            package[i][noscat] = np.zeros(6)
+
+            temp_arr[i] = package[i]
 
         return temp_arr
 
-    x = two_array_tester(tau, epsilon, E0, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1)
+    x = two_array_tester(tau, epsilon, E0, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1, package, column0, column1, column2, column3)
     # get rid of the zeros
-    x = x[~np.all(x == 0, axis=2)]
+    x = x[~np.all(x[:, :, :4] == 0, axis=2)]
     return x
 
-data = CSV_Extract_Multiple_Channel_Files(',', 4, 'C:/Users/alfie/OneDrive/Documents/UoB/Y3 S2/Medical Imaging Group Study', 'CSV1_D1.csv', 'CSV1_D2.csv', 'CSV1_D3.csv', 'CSV1_D4.csv')
-arr0 = data[0]
-arr1 = data[1]
-arr2 = data[2]
-arr3 = data[3]
-
-output = find_true_coincidences(tau, epsilon, E0, arr0, arr1)
-print(output)
+# if __name__ == "__main__":
+#     data = CSV_Extract_Multiple_Channel_Files(',', 4, 'C:/Users/alfie/OneDrive/Documents/UoB/Y3 S2/Medical Imaging Group Study', 'CSV1_D1.csv', 'CSV1_D2.csv', 'CSV1_D3.csv', 'CSV1_D4.csv')
+#     arr0 = data[0]
+#     arr1 = data[1]
+#     arr2 = data[2]
+#     arr3 = data[3]
+#
+#     output = find_true_coincidences(tau, epsilon, E0, arr0, arr1)
+#     print(output)
