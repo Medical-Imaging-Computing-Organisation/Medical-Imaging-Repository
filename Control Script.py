@@ -16,17 +16,16 @@ from numba import set_num_threads
 
 # import CSV_Multiple_Detector_File_Extraction as Ex
 import CSV_Data_Extraction as Ex
-import Temporary_Find_True_Coincidences as Co
+import Find_True_Coincidences as Co
 import Function1 as F1
 import Function2 as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
 
-E0 = 200  # kev
+E0 = 0.662  # kev
 Me = 510.99895000  # kev
-File2 = None
-File3 = None
-tau = 1
+tau = 0.001
+epsilon = 0.01
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
@@ -51,15 +50,14 @@ arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, File4)
 # else:
 #     fEx1 = fEx[0]
 pair_arr = np.array([[0, 2], [0, 3], [1, 2], [1, 3]])
-fCo1 = Co.find_true_coincidences(tau, E0, pair_arr, arr0, arr1)
-fCo2 = Co.find_true_coincidences(tau, E0, pair_arr, arr0, arr2)
-fCo3 = Co.find_true_coincidences(tau, E0, pair_arr, arr0, arr3)
+fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
+fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
+fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
 fCo = np.vstack((fCo1, fCo2, fCo3))
 
 N, c = fCo.shape
-a = np.empty((N,4), dtype=np.float32)
+a = np.empty((N, 4), dtype=np.float32)
 f1 = F1.compton_function(a, fCo, E0, Me)
-
 f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, arr2)
 
 # f1 = np.ones((4, 4))
@@ -73,10 +71,10 @@ data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 
 ''' Drawing all that '''
 fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
-             per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
-                             2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                             3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                             4: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'x'}})
+                             per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
+                                             2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
+                                             3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
+                                             4: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'x'}})
 
 try:  # Colour map creation in try to prevent recreation error
     color_array = plt.get_cmap('YlOrRd')(range(256))
@@ -86,19 +84,18 @@ try:  # Colour map creation in try to prevent recreation error
 except ValueError:
     pass
 
-XYZ = ax[1].scatter(h, v, d, marker='s', s=2000/dnsy, c=data, cmap="YlOrRd_alpha2")
+XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=data, cmap="YlOrRd_alpha2")
 plt.colorbar(XYZ, location='left')
 
-
-mid = int((dnsy-1)/2)
-var = int(mid/5)
+mid = int((dnsy - 1) / 2)
+var = int(mid / 5)
 # XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data, axis=0), cmap="YlOrRd")
-XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[mid-var:mid+var+1, :, :], axis=0), cmap="YlOrRd")
+XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[mid - var:mid + var + 1, :, :], axis=0), cmap="YlOrRd")
 cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
 # YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data, axis=1), cmap="YlOrRd")
-YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, mid-var:mid+var+1, :], axis=1), cmap="YlOrRd")
+YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, mid - var:mid + var + 1, :], axis=1), cmap="YlOrRd")
 cb3 = plt.colorbar(YZ)
-XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, mid-var:mid+var+1], axis=2), cmap="YlOrRd")
+XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, mid - var:mid + var + 1], axis=2), cmap="YlOrRd")
 cb4 = plt.colorbar(XY)
 
 ax[1].set_title('3D Graph')
