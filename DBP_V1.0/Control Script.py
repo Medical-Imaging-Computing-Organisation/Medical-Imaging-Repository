@@ -2,11 +2,11 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
-import pandas as pd
-from pathlib import Path
-from numba import njit
-from numba import prange
-from numba import set_num_threads
+# import pandas as pd
+# from pathlib import Path
+# from numba import njit
+# from numba import prange
+# from numba import set_num_threads
 
 # import CSV_Multiple_Detector_File_Extraction as Ex
 import CSV_Data_Extraction as Ex
@@ -16,8 +16,9 @@ import Function2 as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
 
-E0 = 0.662  # Mev
-Me = 0.51099895000  # Mev
+E0 = 0.662  # MeV
+dE0 = 3E-5  # MeV
+Me = 0.51099895000  # MeV
 tau = 0.001
 epsilon = 0.01
 Delimiter = ','
@@ -37,7 +38,6 @@ arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
 arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
 
 
-
 fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
 fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr2)
 fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
@@ -49,7 +49,7 @@ fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
 
 N, c = fCo.shape
 a = np.empty((N, 4), dtype=np.float32)
-f1 = F1.compton_function(a, fCo, E0, Me)
+f1 = F1.compton_function(a, fCo, E0, dE0, Me)
 f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, Det_Pos_arr)
 # f1 = np.ones((4, 4))
 # f2 = np.ones((5, 31))
@@ -75,11 +75,13 @@ try:  # Colour map creation in try to prevent recreation error
 except ValueError:
     pass
 
+dets = ax[1].scatter([0.03, 0.03, 0.27452, 0.27452], [0.03, -0.03, 0, 0],
+                     [0, 0, 0.17121, -0.17121], marker='o', s=100)
 XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=data, cmap="YlOrRd_alpha2")
 plt.colorbar(XYZ, location='left')
 
 mid = int((dnsy - 1) / 2)
-var = int(mid / 5)
+var = int((dnsy-1) / 20)
 # XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data, axis=0), cmap="YlOrRd")
 XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[mid - var:mid + var + 1, :, :], axis=0), cmap="YlOrRd")
 cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
@@ -90,6 +92,5 @@ XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, mid - var:mid + var + 1], ax
 cb4 = plt.colorbar(XY)
 
 ax[1].set_title('3D Graph')
-ax[1].set_zlim(-lim, lim)
 plt.tight_layout()
 plt.show()
