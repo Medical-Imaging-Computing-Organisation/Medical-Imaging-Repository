@@ -10,12 +10,12 @@ import numpy as np
 Function 1 (Richard)
 -------------------
 'Calculate Angles: From the Coincidence Detection output array 
-[[E1, E2, scatterer index, absorber index], 
-[E1, E2, scatterer index, absorber index], ...], 
+[[E1, E2, dE1, dE2, scatterer index, absorber index], 
+[E1, E2, dE1, dE2, scatterer index, absorber index], ...], 
 use Compton Kinematics to calculate angles theta. 
 Output: 
-[[theta, Scatterer Index, Absorber Index], 
-[theta, Scatterer Index, Absorber Index] ...]'
+[[theta, dtheta, Scatterer Index, Absorber Index], 
+[theta, dtheta, Scatterer Index, Absorber Index], ...]'
 '''
 
 def compton_function(a, array_in, E0, Me):
@@ -69,8 +69,8 @@ def compton_function(a, array_in, E0, Me):
     a[:,0] = np.multiply(En, a[:,0])
     a[:,0] = np.subtract(1,a[:,0])
     a[:,0] = np.arccos(a[:,0])
-    a = np.delete(a, np.where(np.isnan(a[:,0]))[0], axis=0)
-
+    np.delete(a, np.where(np.isnan(a[:, 0]))[0], axis=0)
+    
     #we do not expect an angle greater than 90 degrees. 
     #so we expect the domain of arccos to be 0<= Cos <= 1, but it will function
     #for angles between 90 and 180. 
@@ -87,7 +87,7 @@ def compton_function(a, array_in, E0, Me):
     return a
 
 if __name__ == "__main__":
-    np.array([[E1, E2, scatterer_index, absorber_index],[E1, E2, scatterer_index, absorber_index]])
+    #np.array([[E1, E2, scatterer_index, absorber_index],[E1, E2, scatterer_index, absorber_index]])
     # array is a 4xN array
     # array_in is the
     N = 1000000
@@ -107,12 +107,12 @@ if __name__ == "__main__":
 
     E2 = test_energy(theta, E0, Me)
     E1 = E0-E2
-    array_in = np.empty((N,5), dtype=np.float32)
+    array_in = np.empty((N,6), dtype=np.float32)
     print(array_in)    
     array_in[:,0] = E1   
     array_in[:,1] = E2    
-    array_in[:,5] = scab[0]
-    array_in[:,4] = scab[1]
+    array_in[:,4] = scab[0]
+    array_in[:,5] = scab[1]
     print(array_in)
     
     r, c = np.shape(array_in)
