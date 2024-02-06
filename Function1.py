@@ -54,6 +54,8 @@ def compton_function(a, array_in, E0, Me):
     output : static array of N rows and 3 columns
         column 0 : float32
             theta: compton scattering angle defining a cone of possible origins
+        column 1 : float32
+            dtheta: uncertainty on angle from energy uncertainties
         column 1 : integer
             Sc: the index of the scatterer
         column 2 : integer
@@ -61,8 +63,8 @@ def compton_function(a, array_in, E0, Me):
 
     '''#find an accepted value for Me and set it to a constant arg
     En = np.divide(Me,E0) #float
-    a[:,3] = array_in[:,4]
-    a[:,4] = array_in[:,5]
+    a[:,2] = array_in[:,4]
+    a[:,3] = array_in[:,5]
     a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
     a[:,0] = np.multiply(En, a[:,0])
     a[:,0] = np.subtract(1,a[:,0])
