@@ -12,7 +12,7 @@ function 2 output [[x1, y1, z1, dx1, dy1, dz1, bx, by, bz, dbx, dby, dbz,
                     dR11, dR12, dR13, dR21, dR22, dR23, dR31, dR32, dR33,
                     Scatterer Index, Absorber Index], [...], [...]]
 SI is index #29, AI is #30
-
+Length 32??
 function 3 (this) output [[theta, dtheta, OA vector, dOA, BA vector, dBA, Rotation Matrix, dR], [...]]
 
 OA = scatterer position vector   x1, y1, z1
@@ -29,8 +29,8 @@ import numpy as np
 def PutEmTogether(f1, f2):
     f3 = np.zeros((f1.shape[0], f2.shape[1]))
     f3[:, 0:2] = f1[:, 0:2]  # theta and dtheta
-    idx = np.where((f1[:, 2:4] == f2[:, 29:31][:, None]).all(-1))[0][:f1.shape[0]]
-    f3[:, 2:] = f2[idx, 0:29]  # rest of row
+    idx = np.where((f1[:, 2:4] == f2[:, 30:31][:, None]).all(-1))[0][:f1.shape[0]]
+    f3[:, 2:] = f2[idx, 0: -2]  # rest of row
     return f3
 
 
