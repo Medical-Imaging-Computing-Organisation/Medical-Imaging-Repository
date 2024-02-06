@@ -83,10 +83,8 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
             
             # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
             df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
-            arr2_1 = df2_1.values
-            df2_2 = Read_CSV(CSV2Location, [7], Header, str)
-            arr2_2 = df2_2.values
-            arr2 = np.hstack((arr2_1, arr2_2))
+            arr2 = df2_1.values
+          
             
             # Conditional for Detector Pairing CSV
             if File3_Name != None:
