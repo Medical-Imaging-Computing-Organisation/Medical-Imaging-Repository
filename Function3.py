@@ -29,7 +29,7 @@ import numpy as np
 def PutEmTogether(f1, f2):
     f3 = np.zeros((f1.shape[0], f2.shape[1]))
     f3[:, 0:2] = f1[:, 0:2]  # theta and dtheta
-    idx = np.where((f1[:, 2:4] == f2[:, 30:31][:, None]).all(-1))[0][:f1.shape[0]]
+    idx = np.where((f1[:, 2:] == f2[:, 30:][:, None]).all(-1))[0][:f1.shape[0]]
     f3[:, 2:] = f2[idx, 0: -2]  # rest of row
     return f3
 
