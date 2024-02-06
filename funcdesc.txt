@@ -1,0 +1,27 @@
+    '''
+    Parameters
+    ----------
+    a : array
+        The input static array
+    p : float
+        The sqaure root of the number of points per cone
+    umin : float
+        the lower limit of the generator plane along the u direction
+    umax : float
+        The upper limit of the generator plane along the u direction
+    vmin : float
+        The lower limit of the generator plane along the v direction
+    vmax : float
+        The upper limit of the generator plane along the v direction
+    Lmax: float
+        the upper limit on the modulus of all x y and z values.
+    Returns
+    -------
+    vector : array of  3-vectors
+        column 1 : float
+            x-positions in the master frame
+        column 2 : float
+            y-positions in the master frame
+        column 3 : float
+            z-positions in the master frame
+    '''
