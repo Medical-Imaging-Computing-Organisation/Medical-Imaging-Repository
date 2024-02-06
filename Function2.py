@@ -44,8 +44,8 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         return out
     
     # Use is_unique function to find all unique Scatterer and Absorber index pairs
-    unique_index_pairs = np.where(is_unique(EArray[:,2], EArray[:,3])==True)[0]
-    
+    unique_index_pairs = np.where(is_unique(EArray[:,4], EArray[:,5])==True)[0]
+    # print(unique_index_pairs)
     # Define output array according to number of unique Scatterer-Absorber Pairs present in data
     vec_mat_arr = np.zeros((unique_index_pairs.size, 32), dtype=np.float32) # change to empty once errors are being calculated
     
@@ -55,9 +55,9 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
 
     
     # Iterable - calculating vector and matrix elements
-    @njit(parallel=True)
+    # @njit(parallel=True)
     def Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr, unique_index_pairs):
-        for i in prange(0, unique_index_pairs.size):
+        for i in range(0, unique_index_pairs.size):
         
             # Generate OA Vector
             vec_mat_arr[i,:6] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:7]
