@@ -6,9 +6,9 @@ import pandas as pd
 from pathlib import Path
 
 # Parameters (remember to change based on units of your data)
-# tau = 0.001 # time coincidence window
-# epsilon = 0.01 # energy coincidence window
-# E0 = 0.662 # initial photon energy
+tau = 0.001 # time coincidence window
+epsilon = 0.01 # energy coincidence window
+E0 = 0.662 # initial photon energy
 '''
 arr0 = np.array([[0, 10, 1, 0.1, 0.1],
         [0, 10, 2, 0.1, 0.2],
@@ -70,6 +70,234 @@ arr1 = np.array([[1, 12, 1, 0.1, 0.2],
         [1, 10, 10, 0.1, 0.1]
         ])
 '''
+
+def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
+    '''
+    @author = Alfie
+    @coauthor = Chris
+
+    For events observed in between two and eight detectors, this function finds
+    which events occurred within a given time coincidence window of each other
+    AND could correspond to a single Compton scatter followed by a
+    photoelectric absorption using energy conservation rules.
+
+    NOTE: support for >2 detectors is not currently supported, for now just
+    call this function for each detector pair as required.
+
+    Required Imports
+    ----------
+    import numpy as np
+    from numba import njit
+    from numba import prange
+
+    Parameters
+    ----------
+    tau : float
+        Chosen time coincidence window. Must be given in the same units as the
+        timestamps of the events in the input arrays.
+    epsilon: float
+        Chosen energy coincidence window. Must be given in the same units as
+        the energies of the events in the input arrays.
+    E0 : float
+        Initial photon energy (=662 keV in most cases). Must be given in the
+        same units as the energies of the events in the input arrays
+    arr0 : array
+        Array of events which were observed in the first detector.
+    arr1 : array
+        Array of events which were observed in the second detector.
+
+    Returns
+    -------
+    None.
+
+    '''
+    ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
+    ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
+    
+    # determine the region in arr1 to examine for coincidences
+    test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
+
+    # define an array to contain the coincident events
+    temp_arr = np.ndarray((arr0.shape[0], test_window_size, 6), dtype=np.float32)
+    
+    # define for use later
+    package = np.empty((arr0.shape[0], test_window_size, 6))
+    column0 = np.empty((arr0.shape[0], test_window_size))
+    column1 = np.empty((arr0.shape[0], test_window_size))
+    column2 = np.empty((arr0.shape[0], test_window_size))
+    column3 = np.empty((arr0.shape[0], test_window_size))
+    column4 = np.empty((arr0.shape[0], test_window_size))
+    column5 = np.empty((arr0.shape[0], test_window_size))
+
+    # @njit(parallel=True)
+    def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB, package, column0, column1, column2, column3, column4, column5):
+        '''
+        @author = Alfie
+        @coauthor = Chris
+        
+        Takes events observed in two detectors (A and B) and finds pairs which
+        could correspond to a Compton scatter followed by a photoelectric
+        absorption.
+
+        NOTE: Numba actually seems to slow this function down at the moment,
+        so probably just keep the njit line above commented out.
+
+        Required Imports
+        ----------
+        import numpy as np
+        from numba import njit
+        from numba import prange
+
+        Parameters
+        ----------
+        tau : float
+            time coincidence window.
+        epsilon: float
+            energy coincidence window.
+        E0 : float
+            initial photon energy.
+        arrA : array
+            array of events observed in detector A.
+        arrB : array
+            array of events observed in detector B.
+        temp_arr : array
+            empty array of shape (arrA.shape[0], test_window_size, 4) with dtype=np.float32
+        ave_tstepA : float
+            average increase in time between each index in arrA.
+        ave_tstepB : float
+            average increase in time between each index in arrB.
+        package: array
+            package = np.empty((arrA.shape[0], test_window_size, 6))
+            Needs to be defined outside this function to keep Numba happy.
+        column0, column1, ..., column5: arrays
+            columnX = np.empty((arrA.shape[0], test_window_size))
+            These will all form the columns of the package array.
+
+        Returns
+        -------
+        temp_arr : array
+            Array of valid coincident scatter-absorption event pairs. Format:
+                
+                [[E1, E2, delta_E1, delta_E2], 
+                 [E1, E2, delta_E1, delta_E2],
+                 ...]
+            
+            where E1 is the energy of the scattering event; E2 is the energy
+            of the absorption event; and delta_E1, delta_E2 are uncertainties
+            on those values.
+            
+            NOTE - temp_arr will contain many rows filled with zeros! These
+            are to be removed outside of this function before any further
+            operations are performed.
+
+        '''
+        tstep_ratio_AB = ave_tstepA / ave_tstepB
+        print(tstep_ratio_AB * arrA.shape[0])
+
+        # extract time information from arrA and arrB
+        tA = arrA[:, 2]
+        #tB = arrB[:, 2]
+        delta_tA = arrA[:, 4]
+        delta_tB = arrB[:, 4]
+
+        # calculate limits of time coincidence window for each event in arrA
+        t_max = tA + tau + delta_tA
+        t_min = tA - tau - delta_tA
+
+        # extract energy information from arrA
+        EA = arrA[:, 1]
+        #EB = arrB[:, 1]
+        delta_EA = arrA[:, 3]
+        #delta_EB = arrB[:, 3]
+
+        for i in prange(0, arrA.shape[0]):
+        # iterate over every event in arrA. For the i^th event:                
+
+            # define corresponding index j in arrB    
+            j = int(tstep_ratio_AB * i)
+            if j > arrB.shape[0] - 1:
+                j = arrB.shape[0] - 1
+
+            # calculate limits of the testing window for the i^th event in arrA
+            test_max = int(j + 0.5 * test_window_size)
+            if test_max > arrB.shape[0]:
+                test_max = arrB.shape[0]
+            test_min = int(j - 0.5 * test_window_size)
+            if test_min < 0:
+                test_min = 0
+            # TODO: find a more elegant way of limiting max/min values without making if comparisons every loop
+
+            test_window = arrB[test_min : test_max]
+
+            # check which elements in test_window are between limits of tau
+            time_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[j]) & (t_max[i] >= test_window[:,2] + delta_tB[j]) )
+            coinc_events = test_window[time_test]
+
+            # extract energy information from events which passed time test
+            EB = coinc_events[:,1]
+            delta_EB = coinc_events[:,3]
+
+            # apply energy conservation test to events which passed time test
+            energy_test = np.where( (EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB) )
+            valid_events = coinc_events[energy_test]
+
+            # group valid events by time occurred relative to event i in arrA
+
+            events_before = valid_events[np.where(valid_events[:, 2] < tA[i])]
+            events_after = valid_events[np.where(valid_events[:, 2] >= tA[i])]
+
+            # construct data columns to be added to the output array
+
+            # energy of scatter event
+            column0[i][:events_before.shape[0]] = events_before[:, 1]
+            column0[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 1]
+            column0[i][valid_events.shape[0]:] = 0
+
+            # energy of absorption event
+            column1[i][:events_before.shape[0]] = arrA[i, 1]
+            column1[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 1]
+            column1[i][valid_events.shape[0]:] = 0
+
+            # uncertainty on energy of scatter event
+            column2[i][:events_before.shape[0]] = events_before[:, 3]
+            column2[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 3]
+            column2[i][valid_events.shape[0]:] = 0
+
+            # uncertainty on energy of absorption event
+            column3[i][:events_before.shape[0]] = arrA[i, 3]
+            column3[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 3]
+            column3[i][valid_events.shape[0]:] = 0
+
+            # index of detector where scatter event occurred
+            column4[i][:events_before.shape[0]] = events_before[:, 0]
+            column4[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 0]
+            column4[i][valid_events.shape[0]:] = 0
+
+            # index of detector where absorption event occurred
+            column5[i][:events_before.shape[0]] = arrA[i, 0]
+            column5[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 0]
+            column5[i][valid_events.shape[0]:] = 0
+
+            # package up the columns
+            package[i, :, 0] = column0[i]
+            package[i, :, 1] = column1[i]
+            package[i, :, 2] = column2[i]
+            package[i, :, 3] = column3[i]
+            package[i, :, 4] = column4[i]
+            package[i, :, 5] = column5[i]
+
+            # delete rows where photon was absorbed in its first interaction
+            noscat = np.where((column0[i] != 0) & (column1[i] - column3[i] < epsilon))[0]
+            package[i][noscat] = np.zeros(6)
+
+            temp_arr[i] = package[i]
+
+        return temp_arr
+
+    x = two_array_tester(tau, epsilon, E0, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1, package, column0, column1, column2, column3, column4, column5)
+    # get rid of the zeros
+    x = x[~np.all(x[:, :, :4] == 0, axis=2)]
+    return x
 
 def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Path, ETFile0_Name, ETFile1_Name=None, ETFile2_Name=None, ETFile3_Name=None, ETFile4_Name=None, ETFile5_Name=None, ETFile6_Name=None, ETFile7_Name=None, File2_Name=None, File3_Name=None, Header=None):
     '''
@@ -202,208 +430,12 @@ def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Pa
         # Returning first (Energy-Time) array when applicable
         return arr1
 
-def find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr0_index, arr1_index):
-    '''
-    
-    @author = Alfie
-    @coauthor = Chris
-    
-    For events observed in between two and eight detectors, this function finds
-    which events occurred within a given coincidence window of each other AND
-    could correspond to a single Compton scatter followed by a photoelectric
-    absorption using energy conservation rules.
-    
-    Required Imports
-    ----------
-    import numpy as np
-    from numba import njit
-    from numba import prange
+if __name__ == "__main__":
+    data = CSV_Extract_Multiple_Channel_Files(',', 4, 'C:/Users/alfie/OneDrive/Documents/UoB/Y3 S2/Medical Imaging Group Study', 'CSV1_D1.csv', 'CSV1_D2.csv', 'CSV1_D3.csv', 'CSV1_D4.csv')
+    arr0 = data[0]
+    arr1 = data[1]
+    arr2 = data[2]
+    arr3 = data[3]
 
-    Parameters
-    ----------
-    tau : float
-        Chosen coincidence window. Must be given in the same time units as the
-        timestamps of the events in the input arrays.
-    E0 : float
-        Initial photon energy (=662 keV in most cases). Must be given in the
-        same units as the energies of the events in the input arrays
-    arr0 : array
-        Array of events which were observed in the first detector.
-    arr1 : array
-        Array of events which were observed in the second detector.
-
-    Returns
-    -------
-    None.
-
-    '''
-    ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
-    ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-    
-    # determine the region in arr1 to examine for coincidences
-    test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
-
-    # define an array to contain the coincident events
-    temp_arr = np.ndarray((arr0.shape[0], test_window_size, 6), dtype=np.float32)
-    
-    # define for use later
-    package = np.empty((arr0.shape[0], test_window_size, 6))
-    column0 = np.empty((arr0.shape[0], test_window_size))
-    column1 = np.empty((arr0.shape[0], test_window_size))
-    column2 = np.empty((arr0.shape[0], test_window_size))
-    column3 = np.empty((arr0.shape[0], test_window_size))
-
-    # @njit(parallel=True)
-    def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB, package, column0, column1, column2, column3):
-        '''
-        @author = Alfie
-        
-        Takes events observed in two detectors (A and B) and finds pairs which
-        could correspond to a Compton scatter followed by a photoelectric
-        absorption.
-        
-        IMPORTANT NOTE - at the moment this function only works properly if
-        numba is not enabled! If you decomment the @njit line above, it will
-        break in ways I don't understand but am trying my best to fix.
-
-        Parameters
-        ----------
-        tau : float
-            time coincidence window.
-        epsilon: float
-            energy coincidence window.
-        E0 : float
-            initial photon energy.
-        arrA : array
-            array of events observed in detector A.
-        arrB : array
-            array of events observed in detector B.
-        temp_arr : array
-            empty array of shape (arrA.shape[0], test_window_size, 4) with dtype=np.float32
-        ave_tstepA : float
-            average increase in time between each index in arrA.
-        ave_tstepB : TYPE
-            average increase in time between each index in arrB.
-
-        Returns
-        -------
-        temp_arr : array
-            Array of valid coincident scatter-absorption event pairs. Format:
-                
-                [[E1, E2, delta_E1, delta_E2], 
-                 [E1, E2, delta_E1, delta_E2],
-                 ...]
-            
-            where E1 is the energy of the scattering event; E2 is the energy
-            of the absorption event; and delta_E1, delta_E2 are uncertainties
-            on those values.
-            
-            NOTE - temp_arr will contain many rows filled with zeros! These
-            are to be removed outside of this function before any further
-            operations are performed.
-
-        '''
-        tstep_ratio_AB = ave_tstepA / ave_tstepB
-
-        # extract time information from arrA and arrB
-        tA = arrA[:, 2]
-        #tB = arrB[:, 2]
-        delta_tA = arrA[:, 4]
-        delta_tB = arrB[:, 4]
-
-        # calculate limits of time coincidence window for each event in arrA
-        t_max = tA + tau + delta_tA
-        t_min = tA - tau - delta_tA
-
-        # extract energy information from arrA
-        EA = arrA[:, 1]
-        #EB = arrB[:, 1]
-        delta_EA = arrA[:, 3]
-        #delta_EB = arrB[:, 3]
-
-        
-
-        for i in prange(0, arrA.shape[0]):
-
-            # define corresponding index j in arrB    
-            j = tstep_ratio_AB * i
-
-            # calculate limits of the testing window for the i^th event in arrA
-            test_max = int(j + 0.5 * test_window_size)
-            if test_max > arrB.shape[0]:
-                test_max = arrB.shape[0]
-            test_min = int(j - 0.5 * test_window_size)
-            if test_min < 0:
-                test_min = 0
-            #print(test_min, j, test_max)
-            test_window = arrB[test_min : test_max]
-
-            # check which elements in test_window are between limits of tau
-            time_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[i]) & (t_max[i] >= test_window[:,2] + delta_tB[i]) )
-            coinc_events = test_window[time_test]
-
-            # extract energy information from events which passed time test
-            EB = coinc_events[:,1]
-            delta_EB = coinc_events[:,3]
-
-            # apply energy conservation test to events which passed time test
-            energy_test = np.where( (EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB) )
-            valid_events = coinc_events[energy_test]
-
-            # group valid events by time occurred relative to event i in arrA
-
-            events_before = valid_events[np.where(valid_events[:, 2] < tA[i])]
-            events_after = valid_events[np.where(valid_events[:, 2] >= tA[i])]
-
-            # construct data columns to be added to the output array
-
-            # energy of scatter event
-            column0[i][:events_before.shape[0]] = events_before[:, 1]
-            column0[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 1]
-            column0[i][valid_events.shape[0]:] = 0
-
-            # energy of absorption event
-            column1[i][:events_before.shape[0]] = arrA[i, 1]
-            column1[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 1]
-            column1[i][valid_events.shape[0]:] = 0
-
-            # uncertainty on energy of scatter event
-            column2[i][:events_before.shape[0]] = events_before[:, 3]
-            column2[i][events_before.shape[0]:valid_events.shape[0]] = arrA[i, 3]
-            column2[i][valid_events.shape[0]:] = 0
-
-            # uncertainty on energy of absorption event
-            column3[i][:events_before.shape[0]] = arrA[i, 3]
-            column3[i][events_before.shape[0]:valid_events.shape[0]] = events_after[:, 3]
-            column3[i][valid_events.shape[0]:] = 0
-
-            # package up the columns
-            package[i, :, 0] = column0[i]
-            package[i, :, 1] = column1[i]
-            package[i, :, 2] = column2[i]
-            package[i, :, 3] = column3[i]
-            package[i, :, 4] = arr0_index
-            package[i, :, 5] = arr1_index
-
-            # delete rows where photon was absorbed in its first interaction
-            noscat = np.where((column0[i] != 0) & (column1[i] - column3[i] < epsilon))[0]
-            package[i][noscat] = np.zeros(6)
-
-            temp_arr[i] = package[i]
-
-        return temp_arr
-
-    x = two_array_tester(tau, epsilon, E0, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1, package, column0, column1, column2, column3)
-    # get rid of the zeros
-    x = x[~np.all(x[:, :, :4] == 0, axis=2)]
-    return x
-
-# if __name__ == "__main__":
-#     data = CSV_Extract_Multiple_Channel_Files(',', 4, 'C:/Users/alfie/OneDrive/Documents/UoB/Y3 S2/Medical Imaging Group Study', 'CSV1_D1.csv', 'CSV1_D2.csv', 'CSV1_D3.csv', 'CSV1_D4.csv')
-#     arr0 = data[0]
-#     arr1 = data[1]
-#     arr2 = data[2]
-#     arr3 = data[3]
-#
-#     output = find_true_coincidences(tau, epsilon, E0, arr0, arr1)
-#     print(output)
+    output = find_true_coincidences(tau, epsilon, E0, arr0, arr1)
+    print(output)
