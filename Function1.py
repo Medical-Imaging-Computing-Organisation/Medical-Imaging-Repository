@@ -86,8 +86,8 @@ def compton_function(a, array_in, E0, Me):
 
 if __name__ == "__main__":
     np.array([[E1, E2, scatterer index, absorber index],[E1, E2, scatterer index, absorber index]])
-    array is a 4xN array
-    array_in is the 
+    #array is a 4xN array
+    #array_in is the 
     N = 1000000
     theta = np.linspace(1, 180, N)
     theta = np.divide(np.multiply(theta,np.pi),180)
