@@ -119,9 +119,19 @@ if __name__ == "__main__":
     null = np.linspace(0,0,N)
     one = np.linspace(1,1,N)
     T = np.linspace(0, np.pi/2, N)
-    R11, R12, R13 = one, null, null
-    R21, R22, R23 = null, one*np.cos(T), one*np.sin(T)
-    R31, R32, R33 = null, one*np.sin(T), one*np.cos(T)
+    rotation = 1
+    if rotation == 1: # x-rotation
+        R11, R12, R13 = one, null, null
+        R21, R22, R23 = null, one*np.cos(T), -one*np.sin(T)
+        R31, R32, R33 = null, one*np.sin(T), one*np.cos(T)
+    if rotation == 2: #y-rotation
+        R11, R12, R13 = one*np.cos(T),null, one*np.sin(T)
+        R21, R22, R23 = null, one, null
+        R31, R32, R33 = -one*np.sin(T), null, one*np.cos(T)
+    if rotation == 3: #z-rotation
+        R11, R12, R13 = one*np.cos(T), -one*np.sin(T), null
+        R21, R22, R23 = one*np.sin(T), one*np.cos(T), null
+        R31, R32, R33 = null, null, one
     array_in_test = np.zeros((N,32))
     array_in_test[:,0] = theta
     array_in_test[:,14] = R11
