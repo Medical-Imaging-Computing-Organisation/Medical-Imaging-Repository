@@ -68,8 +68,8 @@ def compton_function(a, array_in, E0, Me):
     a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
     a[:,0] = np.multiply(En, a[:,0])
     a[:,0] = np.subtract(1,a[:,0])
+    np.delete(a, np.where(np.abs(a[:, 0]) > 1.0)[0], axis=0)
     a[:,0] = np.arccos(a[:,0])
-    np.delete(a, np.where(np.isnan(a[:, 0]))[0], axis=0)
     
     #we do not expect an angle greater than 90 degrees. 
     #so we expect the domain of arccos to be 0<= Cos <= 1, but it will function
