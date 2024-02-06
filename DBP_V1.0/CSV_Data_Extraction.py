@@ -62,37 +62,37 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
         return df
         
     # Concurrent branch - functioning
-    else:
+    
         
-        # Read Energy-Time CSV and populate numpy array with its data
-        df1 = Read_CSV(CSV1Location, [0,1,2,3,4], Header, np.float32)
-        arr1 = df1.values
+    # Read Energy-Time CSV and populate numpy array with its data
+    df1 = Read_CSV(CSV1Location, [0,1,2,3,4], Header, np.float32)
+    arr1 = df1.values
         
-        # Conditional for Detector Location CSV
-        if File2_Name != None:
+    # Conditional for Detector Location CSV
+    if File2_Name != None:
             
-            # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
-            df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
-            arr2 = df2_1.values
+        # Read Detector Location CSV, accounting for floats/strings, and populate numpy array with its data
+        df2_1 = Read_CSV(CSV2Location, [0,1,2,3,4,5,6], Header, np.float32)
+        arr2 = df2_1.values
           
             
-            # Conditional for Detector Pairing CSV
-            if File3_Name != None:
+        # Conditional for Detector Pairing CSV
+        if File3_Name != None:
                 
-                # Read Detector Pairing CSV and populate numpy array with its data
-                df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
-                arr3 = df3.values
+            # Read Detector Pairing CSV and populate numpy array with its data
+            df3 = Read_CSV(CSV3Location, [0,1,2], Header, np.float32)
+            arr3 = df3.values
                 
-                # Returning all 3 arrays when applicable
-                return arr1, arr2, arr3
-            
-            else:
-                # Returning first 2 (Energy-Time and Detector Location) arrays when applicable
-                return arr1, arr2
+            # Returning all 3 arrays when applicable
+            return arr1, arr2, arr3
             
         else:
-            # Returning first (Energy-Time) array when applicable
-            return arr1
+            # Returning first 2 (Energy-Time and Detector Location) arrays when applicable
+            return arr1, arr2
+            
+    else:
+        # Returning first (Energy-Time) array when applicable
+        return arr1
 
 
 
