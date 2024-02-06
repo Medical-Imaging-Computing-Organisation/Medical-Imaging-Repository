@@ -1,4 +1,4 @@
-def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multiprocess=False, Header=None):
+def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Header=None):
     '''
     
     @author = Chris
@@ -45,7 +45,7 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
     import numpy as np
     import pandas as pd
     from pathlib import Path
-    import multiprocessing
+    
     
     # Forming full location path for first (Energy-Time) CSV
     BaseLocation = str(Path(Folder_Path))
@@ -64,13 +64,6 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
         df = pd.read_csv(Location, sep=Delimiter, usecols=columns, header=Header, dtype=datatype)
         return df
     
-    # Multiprocessing branch - in development
-    if Multiprocess == True:
-    
-        in_development = "Code still in development, will be added as soon as possible. Please use regular processing for now."
-        
-        return in_development
-        
     # Concurrent branch - functioning
     else:
         
