@@ -68,7 +68,9 @@ def compton_function(a, array_in, E0, Me):
     a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
     a[:,0] = np.multiply(En, a[:,0])
     a[:,0] = np.subtract(1,a[:,0])
-    a[:,0] = np.arccos(a[:,0]) 
+    a[:,0] = np.arccos(a[:,0])
+    np.delete(a, np.where(np.isnan(a[:, 0]))[0], axis=0)
+    
     #we do not expect an angle greater than 90 degrees. 
     #so we expect the domain of arccos to be 0<= Cos <= 1, but it will function
     #for angles between 90 and 180. 
@@ -85,9 +87,9 @@ def compton_function(a, array_in, E0, Me):
     return a
 
 if __name__ == "__main__":
-    #np.array([[E1, E2, scatterer_index, absorber_index],[E1, E2, scatterer_index, absorber_index]])
-    #array is a 4xN array
-    #array_in is the 
+    np.array([[E1, E2, scatterer_index, absorber_index],[E1, E2, scatterer_index, absorber_index]])
+    # array is a 4xN array
+    # array_in is the
     N = 1000000
     theta = np.linspace(1, 180, N)
     theta = np.divide(np.multiply(theta,np.pi),180)
