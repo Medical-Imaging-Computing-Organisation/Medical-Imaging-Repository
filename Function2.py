@@ -1,3 +1,6 @@
+import numpy as np
+from numba import njit, prange
+
 def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
     '''
     
@@ -53,7 +56,7 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
     
     # Iterable - calculating vector and matrix elements
     @njit(parallel=True)
-    def Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr):
+    def Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr, unique_index_pairs):
         for i in prange(0, unique_index_pairs.size):
         
             # Generate OA Vector
@@ -98,5 +101,5 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         # return the vector & matrix array
         return vec_mat_arr
 
-    output_arr = Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr)
+    output_arr = Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr, unique_index_pairs)
     return output_arr
