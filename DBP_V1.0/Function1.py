@@ -18,7 +18,7 @@ Output:
 [theta, dtheta, Scatterer Index, Absorber Index], ...]'
 '''
 
-def compton_function(a, array_in, E0, Me):
+def compton_function(a, array_in, E0, E0_err, Me):
     '''
     Calculates the compton scattering angle from the energies 
     
@@ -63,13 +63,16 @@ def compton_function(a, array_in, E0, Me):
 
     '''#find an accepted value for Me and set it to a constant arg
     En = np.divide(Me,E0) #float
-    a[:,2] = array_in[:,4]
+    a[:,2] = array_in[:,4] #passing detector indices
     a[:,3] = array_in[:,5]
     a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
-    a[:,0] = np.multiply(En, a[:,0])
-    a[:,0] = np.subtract(1,a[:,0])
-    a = np.delete(a, np.where(np.abs(a[:, 0]) > 1.0)[0], axis=0)
-    a[:,0] = np.arccos(a[:,0])
+    a[:,0] = np.multiply(En, a[:,0]) #MeE1/E0E2
+    a[:,1] = ((E0_err/E0)^2+(array_in[:,2]/array_in[:,0])^2+(array_in[:,3]/array_in[:,1])^2) #root summed square of percentage errors
+    a[:,1] = np.multiply(a[:,0], a[:,1])# (MeE1/E0E2)*sqrt
+    a[:,0] = np.subtract(1,a[:,0]) #1-(MeE1/E0E2)=cos(theta)
+    a = np.delete(a, np.where(np.abs(a[:, 0]) > 1.0)[0], axis=0) #filtering |cos(theta)|>1
+    a[:,0] = np.arccos(a[:,0]) #theta = arccos(cos(theta))
+    a[:,1] = np.divide(a[:,1], np.sin(a[:,0])) #dtheta = (MeE1/E0E2)*sqrt/sin(theta)
     
     #we do not expect an angle greater than 90 degrees. 
     #so we expect the domain of arccos to be 0<= Cos <= 1, but it will function
@@ -79,7 +82,7 @@ def compton_function(a, array_in, E0, Me):
     #a[:,0] = (180/np.pi)*np.arccos(a[:,0])
     
     #legacy error propogation: to be reimplemented later with corrected terms.
-    #percent=((E0_err/E0)^2+(E1_err/E1)^2+(E2_err/E2)^2+(Me_err/Me)^2)
+    #percent=((E0_err/E0)^2+(array_in[:,2]/array_in[:,0])^2+(array_in[:,3]/array_in[:,1])^2)
     #cos_err=np.multiply(C,np.sqrt(percent))
     #theta_err=cos_err/np.sin(theta)
     #return np.array([theta, theta_err])
