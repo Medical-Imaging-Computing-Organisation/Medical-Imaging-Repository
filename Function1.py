@@ -27,35 +27,35 @@ Output:
 #array is a 4xN array
 #array_in is the 
 
-N = 1000000
-theta = np.linspace(1, 180, N)
-theta = np.divide(np.multiply(theta,np.pi),180)
-E0 = 200 #kev
-Me = 510.99895000 #kev
-scab = np.zeros((2,N), dtype = int)
-scab[0] = np.random.randint(1,5+1, N)
-scab[1] = np.random.randint(6,10+1,N)
+# N = 1000000
+# theta = np.linspace(1, 180, N)
+# theta = np.divide(np.multiply(theta,np.pi),180)
+# E0 = 200 #kev
+# Me = 510.99895000 #kev
+# scab = np.zeros((2,N), dtype = int)
+# scab[0] = np.random.randint(1,5+1, N)
+# scab[1] = np.random.randint(6,10+1,N)
 
-def test_energy(theta, E0, Me):
-    T = np.subtract(1,np.cos(theta))
-    E2 = np.divide(np.multiply(E0,T),Me)
-    E2 = np.divide(E0, np.add(E2,1))
-    return E2
+# def test_energy(theta, E0, Me):
+#     T = np.subtract(1,np.cos(theta))
+#     E2 = np.divide(np.multiply(E0,T),Me)
+#     E2 = np.divide(E0, np.add(E2,1))
+#     return E2
 
-E2 = test_energy(theta, E0, Me)
-E1 = E0-E2
-array_in = np.empty((N,5), dtype=np.float32)
-#print(array_in)
-array_in[:,0] = E1
-array_in[:,1] = E2
-array_in[:,5] = scab[0]
-array_in[:,4] = scab[1]
+# E2 = test_energy(theta, E0, Me)
+# E1 = E0-E2
+# array_in = np.empty((N,5), dtype=np.float32)
+# #print(array_in)
+# array_in[:,0] = E1
+# array_in[:,1] = E2
+# array_in[:,5] = scab[0]
+# array_in[:,4] = scab[1]
 
-print(array_in)
+# print(array_in)
 
 
-r, c = np.shape(array_in)
-a = np.empty((N,4), dtype=np.float32)
+# r, c = np.shape(array_in)
+# a = np.empty((N,4), dtype=np.float32)
 def compton_function(a, array_in, E0, Me):
     '''
     Calculates the compton scattering angle from the energies 
@@ -121,13 +121,13 @@ def compton_function(a, array_in, E0, Me):
     return a
 
 
-a = compton_function(a, array_in, E0, Me)
-print (a)
+# a = compton_function(a, array_in, E0, Me)
+# print (a)
 
-theta_result = a[:,0]
-perc = np.multiply(np.divide(np.abs(np.subtract(theta,theta_result)),theta),100)
-#print(perc)
-avg_perc = np.mean(perc)
-#print(f'error percentage = {avg_perc}% deviation from expected angle.')
-degree_error_avg = avg_perc*180/(np.pi*100)
-#print(f'or about {degree_error_avg} degrees')
+# theta_result = a[:,0]
+# perc = np.multiply(np.divide(np.abs(np.subtract(theta,theta_result)),theta),100)
+# #print(perc)
+# avg_perc = np.mean(perc)
+# #print(f'error percentage = {avg_perc}% deviation from expected angle.')
+# degree_error_avg = avg_perc*180/(np.pi*100)
+# #print(f'or about {degree_error_avg} degrees')

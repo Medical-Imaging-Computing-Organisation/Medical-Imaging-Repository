@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb  1 14:19:50 2024
-
-@author: Richard Malone
-"""
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,35 +24,33 @@ Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
 ETFile0 = 'CSV1_D1.csv'  # ?
-File2 = 'CSV1_D2.csv'
-File3 = 'CSV1_D3.csv'
-File4 = 'CSV1_D4.csv'
+ETFile1 = 'CSV1_D2.csv'
+ETFile2 = 'CSV1_D3.csv'
+ETFile3 = 'CSV1_D4.csv'
+Det_Pos = 'CSV2.csv'
 # Number_of_Files = 4
 
-# fEx = Ex.CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Files, Folder_Path,
-#                             ETFile0, ETFile2_Name=File2, ETFile3_Name=File3, ETFile4_Name=File4)[0]
-arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
-arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, File2)
-arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, File3)
-arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, File4)
 
-# if File2 is not None:
-#     fEx1 = fEx[0]
-#     fEx2 = fEx[1]
-#     if File3 is not None:
-#         fEx3 = fEx[2]
-# else:
-#     fEx1 = fEx[0]
-pair_arr = np.array([[0, 2], [0, 3], [1, 2], [1, 3]])
-fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
-fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
-fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
+arr0, Det_Pos_arr = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0, Det_Pos)
+arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
+arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
+arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
+
+
+
+fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1, 0, 1)
+fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1, 2, 1)
+fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3, 0, 3)
 fCo = np.vstack((fCo1, fCo2, fCo3))
 
+
+
+# print(fCo)
+print(fCo[0].size)
 N, c = fCo.shape
-a = np.empty((N, 4), dtype=np.float32)
+a = np.empty((N, 6), dtype=np.float32)
 f1 = F1.compton_function(a, fCo, E0, Me)
-f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, arr2)
+f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, Det_Pos_arr)
 
 # f1 = np.ones((4, 4))
 # f2 = np.ones((5, 31))
