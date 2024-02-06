@@ -16,14 +16,14 @@ import Function2 as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
 
-E0 = 0.662  # kev
-Me = 510.99895000  # kev
+E0 = 0.662  # Mev
+Me = 0.51099895000  # Mev
 tau = 0.001
 epsilon = 0.01
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CSV1_D1.csv'  # ?
+ETFile0 = 'CSV1_D1.csv'
 ETFile1 = 'CSV1_D2.csv'
 ETFile2 = 'CSV1_D3.csv'
 ETFile3 = 'CSV1_D4.csv'
@@ -51,7 +51,6 @@ N, c = fCo.shape
 a = np.empty((N, 6), dtype=np.float32)
 f1 = F1.compton_function(a, fCo, E0, Me)
 f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, Det_Pos_arr)
-
 # f1 = np.ones((4, 4))
 # f2 = np.ones((5, 31))
 f3 = F3.PutEmTogether(f1, f2)
