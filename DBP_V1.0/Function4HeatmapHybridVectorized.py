@@ -100,7 +100,10 @@ def voxel_fit(h, v, d, xyz, shape, voxel_r):
     data1 = np.zeros(shape)  # temporary dataset
     cs = np.digitize(xyz, h[0, :, 0]+voxel_r, right=True)
     # returns indices for xyz bins to fit into voxels
-    np.add.at(data1, (cs[:, 1], cs[:, 0], cs[:, 2]), 1)  # if dupe
+    try:
+        np.add.at(data1, (cs[:, 1], cs[:, 0], cs[:, 2]), 1)  # if dupe
+    except IndexError:
+        print("You've provided values outside of the limits to F4.")
     # adds 1 to every voxel specified, including duplicate indices
     return data1
 
