@@ -67,7 +67,7 @@ def compton_function(a, array_in, E0, E0_err, Me):
     a[:,3] = array_in[:,5]
     a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
     a[:,0] = np.multiply(En, a[:,0]) #MeE1/E0E2
-    a[:,1] = ((E0_err/E0)^2+(array_in[:,2]/array_in[:,0])^2+(array_in[:,3]/array_in[:,1])^2) #root summed square of percentage errors
+    a[:,1] = ((E0_err/E0)**2+(array_in[:,2]/array_in[:,0])**2+(array_in[:,3]/array_in[:,1])**2) #root summed square of percentage errors
     a[:,1] = np.multiply(a[:,0], a[:,1])# (MeE1/E0E2)*sqrt
     a[:,0] = np.subtract(1,a[:,0]) #1-(MeE1/E0E2)=cos(theta)
     a = np.delete(a, np.where(np.abs(a[:, 0]) > 1.0)[0], axis=0) #filtering |cos(theta)|>1
