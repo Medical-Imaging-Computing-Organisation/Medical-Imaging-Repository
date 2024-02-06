@@ -85,7 +85,7 @@ def compton_function(a, array_in, E0, Me):
     return a
 
 if __name__ == "__main__":
-    np.array([[E1, E2, scatterer index, absorber index],[E1, E2, scatterer index, absorber index]])
+    #np.array([[E1, E2, scatterer_index, absorber_index],[E1, E2, scatterer_index, absorber_index]])
     #array is a 4xN array
     #array_in is the 
     N = 1000000
