@@ -1,4 +1,4 @@
-def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Multiprocess=False, Header=None):
+def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=None, Header=None):
     '''
     
     @author = Chris
@@ -13,9 +13,7 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
                     
             Optional Parameters:
                     File2_Name (string): The file name of the Detector Location CSV to have data extracted
-                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted
-                    Multiprocess (boolean): Whether to use CPU parallelization for data extraction, default is False
-                        Note: Multiprocess assumes 8 available threads                                      
+                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted                                    
                     Header: Optional specification for when CSVs contain a header row, default is None
             
             
@@ -45,7 +43,6 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
     import numpy as np
     import pandas as pd
     from pathlib import Path
-    import multiprocessing
     
     # Forming full location path for first (Energy-Time) CSV
     BaseLocation = str(Path(Folder_Path))
@@ -63,13 +60,6 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
     def Read_CSV(Location, columns, Header, datatype):
         df = pd.read_csv(Location, sep=Delimiter, usecols=columns, header=Header, dtype=datatype)
         return df
-    
-    # Multiprocessing branch - in development
-    if Multiprocess == True:
-    
-        in_development = "Code still in development, will be added as soon as possible. Please use regular processing for now."
-        
-        return in_development
         
     # Concurrent branch - functioning
     else:
