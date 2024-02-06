@@ -107,12 +107,12 @@ if __name__ == "__main__":
 
     E2 = test_energy(theta, E0, Me)
     E1 = E0-E2
-    array_in = np.empty((N,5), dtype=np.float32)
+    array_in = np.empty((N,6), dtype=np.float32)
     print(array_in)    
     array_in[:,0] = E1   
     array_in[:,1] = E2    
-    array_in[:,5] = scab[0]
-    array_in[:,4] = scab[1]
+    array_in[:,4] = scab[0]
+    array_in[:,5] = scab[1]
     print(array_in)
     
     r, c = np.shape(array_in)
