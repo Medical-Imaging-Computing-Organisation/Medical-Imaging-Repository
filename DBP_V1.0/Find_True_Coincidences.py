@@ -5,10 +5,11 @@ from numba import prange
 import pandas as pd
 from pathlib import Path
 
-# Parameters (remember to change based on units of your data)
-# tau = 0.001 # time coincidence window
-# epsilon = 0.01 # energy coincidence window
-# E0 = 0.662 # initial photon energy
+if __name__ == "__main__":
+    # Parameters (remember to change based on units of your data)
+    tau = 0.001 # time coincidence window
+    epsilon = 0.01 # energy coincidence window
+    E0 = 0.662 # initial photon energy
 '''
 arr0 = np.array([[0, 10, 1, 0.1, 0.1],
         [0, 10, 2, 0.1, 0.2],
@@ -113,13 +114,13 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
     '''
     ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
     ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-    
+
     # determine the region in arr1 to examine for coincidences
     test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
 
     # define an array to contain the coincident events
     temp_arr = np.ndarray((arr0.shape[0], test_window_size, 6), dtype=np.float32)
-    
+
     # define for use later
     package = np.empty((arr0.shape[0], test_window_size, 6))
     column0 = np.empty((arr0.shape[0], test_window_size))
@@ -134,7 +135,7 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
         '''
         @author = Alfie
         @coauthor = Chris
-        
+
         Takes events observed in two detectors (A and B) and finds pairs which
         could correspond to a Compton scatter followed by a photoelectric
         absorption.
@@ -177,22 +178,22 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
         -------
         temp_arr : array
             Array of valid coincident scatter-absorption event pairs. Format:
-                
-                [[E1, E2, delta_E1, delta_E2], 
+
+                [[E1, E2, delta_E1, delta_E2],
                  [E1, E2, delta_E1, delta_E2],
                  ...]
-            
+
             where E1 is the energy of the scattering event; E2 is the energy
             of the absorption event; and delta_E1, delta_E2 are uncertainties
             on those values.
-            
+
             NOTE - temp_arr will contain many rows filled with zeros! These
             are to be removed outside of this function before any further
             operations are performed.
 
         '''
         tstep_ratio_AB = ave_tstepA / ave_tstepB
-        # print(tstep_ratio_AB * arrA.shape[0])
+        print(tstep_ratio_AB * arrA.shape[0])
 
         # extract time information from arrA and arrB
         tA = arrA[:, 2]
@@ -211,22 +212,14 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
         #delta_EB = arrB[:, 3]
 
         for i in prange(0, arrA.shape[0]):
-        # iterate over every event in arrA. For the i^th event:                
+        # iterate over every event in arrA. For the i^th event:          
 
-            # define corresponding index j in arrB    
-            j = int(tstep_ratio_AB * i)
-            if j > arrB.shape[0] - 1:
-                j = arrB.shape[0] - 1
+            # define corresponding index j in arrB
+            j = int(max(0, min(tstep_ratio_AB * i, arrB.shape[0] - 1)))
 
             # calculate limits of the testing window for the i^th event in arrA
-            test_max = int(j + 0.5 * test_window_size)
-            if test_max > arrB.shape[0]:
-                test_max = arrB.shape[0]
-            test_min = int(j - 0.5 * test_window_size)
-            if test_min < 0:
-                test_min = 0
-            # TODO: find a more elegant way of limiting max/min values without making if comparisons every loop
-
+            test_max = int(max(0, min(j + 0.5 * test_window_size, arrB.shape[0])))
+            test_min = int(max(0, min(j - 0.5 * test_window_size, arrB.shape[0])))
             test_window = arrB[test_min : test_max]
 
             # check which elements in test_window are between limits of tau
@@ -301,51 +294,51 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
 
 def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Path, ETFile0_Name, ETFile1_Name=None, ETFile2_Name=None, ETFile3_Name=None, ETFile4_Name=None, ETFile5_Name=None, ETFile6_Name=None, ETFile7_Name=None, File2_Name=None, File3_Name=None, Header=None):
     '''
-    
+
     @author = Chris
-    
+
     Takes 1-8 Energy-Time CSV file locations and 0-2 Detector Information CSV file locations in pre-specified format and extracts their data to Numpy Arrays
-    
+
             Parameters:
                     Delimiter (string): Delimiter for column separation within the CSV(s)
                     Number_of_Detectors (int): Number of detectors used for the run producing the CSV
                     Folder_Path (string): The local directory path where the CSV(s) are stored
                     ETFile0_Name (string): The file name of the Energy-Time CSV to have data extracted
-                    
-                    
+
+
             Optional Parameters:
                     ETFile1_Name - ETFile7_Name (strings): The file names of up to 7 more Energy-Time CSVs to have data extracted
                     File2_Name (string): The file name of the Detector Location CSV to have data extracted
-                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted                                   
+                    File3_Name (string): The file name of the Detector Pairing CSV to have data extracted                          
                     Header: Optional specification for when CSVs contain a header row, default is None
-                    
+
             Required Imports:
                     import numpy as np
                     import pandas as pd
                     from pathlib import Path
-            
-            
+
+
             Required CSV Formats:
                     Energy-Time CSV(s): | Detector Index (int) | Energy (float32) | Time (float32) | Delta Energy (float32) | Delta Time (float32) |
-                    
-                    
-            Optional CSV Formats:         
+
+
+            Optional CSV Formats:
                     Detector Location CSV: | Detector Index (int) | x (float32) | y (float32) | z (float32) | Delta x (float32) | Delta y (float32) | Delta z (float32) | Sc/Ab (str) |
                     Detector Pairing CSV: | Scatterer Index (int) | Absorber Index (int) | Ballpark Angular Uncertainty (float32) |
-                    
-                    
+
+
             Returns:
                     arr1 (Numpy Array): Numpy Array (of Arrays) with the data from Energy-Time CSV(s)
-                
+
                         arr1: [[[Detector Index, Energy, Time, Delta Energy, Delta Time], ...], [[Detector Index, Energy, Time, Delta Energy, Delta Time], ...], ...]
-                       
-                       
+
+
             Optional Returns:
                     arr2, arr3 (Numpy Arrays): Numpy Arrays with the data from Detector Location and Detector Pairing CSVs respectively
-                        
+
                         arr2: [[Detector Index, x, y, z, Delta x, Delta y, Delta z, Sc/Ab], ...]
                         arr3: [[Scatterer Index, Absorber Index, Ballpark Angular Uncertainty], ...]
-                    
+
     '''
 
     # Define location array, which will contain the paths for each Energy-Time CSV to be read
@@ -439,3 +432,8 @@ if __name__ == "__main__":
 
     output = find_true_coincidences(tau, epsilon, E0, arr0, arr1)
     print(output)
+
+    exp_runtime = arr0[-1, 2] - arr0[0, 2]
+    print(f'The script found {output.shape[0]} pairs of coincident events.')
+    print(f'The experiment ran for {exp_runtime} seconds.')
+    print(f'Therefore the number of coincidences detected per second was {output.shape[0] / exp_runtime}.')
