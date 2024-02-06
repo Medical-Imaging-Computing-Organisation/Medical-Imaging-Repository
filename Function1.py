@@ -10,12 +10,12 @@ import numpy as np
 Function 1 (Richard)
 -------------------
 'Calculate Angles: From the Coincidence Detection output array 
-[[E1, E2, scatterer index, absorber index], 
-[E1, E2, scatterer index, absorber index], ...], 
+[[E1, E2, dE1, dE2, scatterer index, absorber index], 
+[E1, E2, dE1, dE2, scatterer index, absorber index], ...], 
 use Compton Kinematics to calculate angles theta. 
 Output: 
-[[theta, Scatterer Index, Absorber Index], 
-[theta, Scatterer Index, Absorber Index] ...]'
+[[theta, dtheta, Scatterer Index, Absorber Index], 
+[theta, dtheta, Scatterer Index, Absorber Index], ...]'
 '''
 
 def compton_function(a, array_in, E0, Me):
