@@ -61,32 +61,34 @@ def compton_function(a, array_in, E0, E0_err, Me):
         column 2 : integer
             Ab : the index of the absorber
 
-    '''#find an accepted value for Me and set it to a constant arg
-    En = np.divide(Me,E0) #float
-    a[:,2] = array_in[:,4] #passing detector indices
+    '''  #find an accepted value for Me and set it to a constant arg
+    En = np.divide(Me,E0)  #float
+    a[:,2] = array_in[:,4]  #passing detector indices
     a[:,3] = array_in[:,5]
-    a[:,0] = np.divide(array_in[:,0],array_in[:,1]) #E1/E2
-    a[:,0] = np.multiply(En, a[:,0]) #MeE1/E0E2
+    a[:,0] = np.divide(array_in[:,0],array_in[:,1])  #E1/E2
+    a[:,0] = np.multiply(En, a[:,0])  #MeE1/E0E2
     a[:,1] = ((E0_err/E0)**2+(array_in[:,2]/array_in[:,0])**2+(array_in[:,3]/array_in[:,1])**2) #root summed square of percentage errors
-    a[:,1] = np.multiply(a[:,0], a[:,1])# (MeE1/E0E2)*sqrt
-    a[:,0] = np.subtract(1,a[:,0]) #1-(MeE1/E0E2)=cos(theta)
-    a = np.delete(a, np.where(np.abs(a[:, 0]) > 1.0)[0], axis=0) #filtering |cos(theta)|>1
-    a[:,0] = np.arccos(a[:,0]) #theta = arccos(cos(theta))
-    a[:,1] = np.divide(a[:,1], np.sin(a[:,0])) #dtheta = (MeE1/E0E2)*sqrt/sin(theta)
-    
-    #we do not expect an angle greater than 90 degrees. 
+    a[:,1] = np.multiply(a[:,0], a[:,1])  # (MeE1/E0E2)*sqrt
+    a[:,0] = np.subtract(1,a[:,0])  #1-(MeE1/E0E2)=cos(theta)
+    b = a.shape[0]
+    a = np.delete(a, np.where(np.abs(a[:, 0]) > 1.0)[0], axis=0)  #filtering |cos(theta)|>1
+    print(b-a.shape[0], "events cut for arccos")
+    a[:,0] = np.arccos(a[:,0])  #theta = arccos(cos(theta))
+    a[:,1] = np.divide(a[:,1], np.sin(a[:,0]))  #dtheta = (MeE1/E0E2)*sqrt/sin(theta)
+
+    #we do not expect an angle greater than 90 degrees.
     #so we expect the domain of arccos to be 0<= Cos <= 1, but it will function
-    #for angles between 90 and 180. 
-    
+    #for angles between 90 and 180.
+
     #degree return for development only
     #a[:,0] = (180/np.pi)*np.arccos(a[:,0])
-    
+
     #legacy error propogation: to be reimplemented later with corrected terms.
     #percent=((E0_err/E0)^2+(array_in[:,2]/array_in[:,0])^2+(array_in[:,3]/array_in[:,1])^2)
     #cos_err=np.multiply(C,np.sqrt(percent))
     #theta_err=cos_err/np.sin(theta)
     #return np.array([theta, theta_err])
-    
+
     return a
 
 if __name__ == "__main__":
@@ -111,13 +113,13 @@ if __name__ == "__main__":
     E2 = test_energy(theta, E0, Me)
     E1 = E0-E2
     array_in = np.empty((N,6), dtype=np.float32)
-    print(array_in)    
-    array_in[:,0] = E1   
-    array_in[:,1] = E2    
+    print(array_in)
+    array_in[:,0] = E1
+    array_in[:,1] = E2
     array_in[:,4] = scab[0]
     array_in[:,5] = scab[1]
     print(array_in)
-    
+
     r, c = np.shape(array_in)
     a= np.empty((N,4), dtype=np.float32)
     a = compton_function(a, array_in, E0, Me)
