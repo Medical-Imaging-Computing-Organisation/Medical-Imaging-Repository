@@ -22,42 +22,69 @@ import Function4HeatmapHybridVectorized as F4
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
-tau = 0.001
+tau = 1E10
 epsilon = 0.01
-Delimiter = ','
+Delimiter = ';'
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CSV1_D1.csv'
-ETFile1 = 'CSV1_D2.csv'
-ETFile2 = 'CSV1_D3.csv'
-ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'CSV2.csv'
+ETFile0 = 'CH0 01Feb Setup 2 A.csv'
+ETFile1 = 'CH1 01Feb Setup 2 B.csv'
+ETFile2 = 'CH2 01Feb Setup 2 A.csv'
+ETFile3 = 'CH3 01Feb Setup 2 B.csv'
+Det_Pos = 'positionoutput2.csv'
 # Number_of_Files = 4
 start = timer()
 
+CSV_Start = timer()
 arr0, Det_Pos_arr = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0, Det_Pos)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
 arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
 arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
 
+print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
 
+Coincidence_Start = timer()
+Coincidence_Start01 = timer()
 fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
-fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr2)
-fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
-fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr2)
-fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
-fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
 
-fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
+Coincidence_Start02 = timer()
+fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
+print("Coincidence 50% done in {} s".format(timer()-Coincidence_Start02))
 
+Coincidence_Start03 = timer()
+fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
+print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
+
+fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+# fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
+# fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+
+
+
+# fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
+fCo = np.vstack((fCo1, fCo2, fCo3, fCo4))
+print("Overall Coincidence Done in {} s".format(timer() - Coincidence_Start))
+
+
+F1_Start = timer()
 a = np.empty((fCo.shape[0], 4), dtype=np.float32)
 f1 = F1.compton_function(a, fCo, E0, dE0, Me)
-f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, Det_Pos_arr)
-f3 = F3.PutEmTogether(f1, f2)
+print("F1 Done in {} s".format(timer() - F1_Start))
 
+F2_Start = timer()
+f2 = F2.Generate_Position_Vectors_And_Matrices(fCo, Det_Pos_arr)
+print("F2 Done in {} s".format(timer() - F2_Start))
+
+F3_Start = timer()
+f3 = F3.PutEmTogether(f1, f2)
+print("F3 Done in {} s".format(timer() - F3_Start))
+
+F4_Start = timer()
 h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 2.5)
 points = F4.cones_generator(f3, 100, -2.5, 2.5, -2.5, 2.5, lim)
 data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
+print("F4 Done in {} s".format(timer() - F4_Start))
 
 ''' Drawing all that '''
 fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
