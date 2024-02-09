@@ -114,9 +114,14 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
     '''
     ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
     ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-
+    
+    # Need to remove NaNs from being calculated by filtering tstep
+    
+    
+    
     # determine the region in arr1 to examine for coincidences
     test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
+    
 
     # define an array to contain the coincident events
     temp_arr = np.ndarray((arr0.shape[0], test_window_size, 6), dtype=np.float32)
@@ -130,7 +135,7 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
     column4 = np.empty((arr0.shape[0], test_window_size))
     column5 = np.empty((arr0.shape[0], test_window_size))
 
-    # @njit(parallel=True)
+    #@njit(parallel=True)
     def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB, package, column0, column1, column2, column3, column4, column5):
         '''
         @author = Alfie
