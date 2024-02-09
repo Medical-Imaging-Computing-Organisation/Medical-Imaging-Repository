@@ -2,9 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
-import plotly.graph_objects as go
-import plotly.express as px
 from timeit import default_timer as timer
+import scipy.ndimage as nd
 # import pandas as pd
 # from pathlib import Path
 # from numba import njit
@@ -35,6 +34,7 @@ Det_Pos = 'positionoutput2.csv'
 # Number_of_Files = 4
 start = timer()
 
+print("Started!")
 CSV_Start = timer()
 arr0, Det_Pos_arr = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0, Det_Pos)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
@@ -106,16 +106,29 @@ dets = ax[1].scatter([0.03, 0.03, 0.27452, 0.27452], [0.03, -0.03, 0, 0],
 XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=data, cmap="YlOrRd_alpha2")
 plt.colorbar(XYZ, location='left')
 
-mid = np.unravel_index(np.argmax(data), data.shape)
-var = int((dnsy-1) / 10)
+hottest = np.max(data)
+hot = np.unravel_index(np.argmax(data), data.shape)
+std = np.std(data)
+# hotfinder, _ = nd.label((data >= hottest-10*std)*1)
+# hotarea = np.bincount(hotfinder.ravel())[1:]
+# print(hotarea)
+# hotdev = hotarea.mean()/2
+# print(hotarea, hotdev, "hot mean radius", std)
+# XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=hotfinder, cmap="YlOrRd_alpha2")
+# plt.colorbar(XYZ, location='left')
+
+var = int((std-voxel_r)//(2*voxel_r))  # NAH
 # var = int
-XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[mid[0] - var:mid[0] + var + 1, :, :], axis=0), cmap="YlOrRd")
+XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[hot[0] - var:hot[0] + var + 1, :, :], axis=0), cmap="YlOrRd")
 cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
-YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, mid[1] - var:mid[1] + var + 1, :], axis=1), cmap="YlOrRd")
+YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, hot[1] - var:hot[1] + var + 1, :], axis=1), cmap="YlOrRd")
 cb3 = plt.colorbar(YZ)
-XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, mid[2] - var:mid[2] + var + 1], axis=2), cmap="YlOrRd")
+XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, hot[2] - var:hot[2] + var + 1], axis=2), cmap="YlOrRd")
 cb4 = plt.colorbar(XY)
 ax[1].set_title('3D Graph')
+loclabel = ("Hottest voxel found at:\nX: %.5f\nY: %.5f\nZ: %.5f"
+            % (h[hot], v[hot], d[hot]))
+ax[2].text(x=-15, y=0, s=loclabel)
 plt.tight_layout()
 print("%.2f seconds run time" % (timer()-start))
 plt.show()
