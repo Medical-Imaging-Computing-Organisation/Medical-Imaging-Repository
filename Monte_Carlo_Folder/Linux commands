@@ -22,6 +22,7 @@ cd .. (move up one directory)
 
 make
 
+make clean (if you've recently moved directories and have unexpected errors, try this)
 
 URLS: 
 
