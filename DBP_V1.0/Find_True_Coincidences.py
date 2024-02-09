@@ -135,7 +135,7 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
     column4 = np.empty((arr0.shape[0], test_window_size))
     column5 = np.empty((arr0.shape[0], test_window_size))
 
-    #@njit(parallel=True)
+    @njit(parallel=True)
     def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB, package, column0, column1, column2, column3, column4, column5):
         '''
         @author = Alfie
