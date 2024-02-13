@@ -1,9 +1,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap as LSC
 from timeit import default_timer as timer
-import scipy.ndimage as nd
+# import scipy.ndimage as nd
 # import pandas as pd
 # from pathlib import Path
 # from numba import njit
@@ -17,26 +16,32 @@ import Function1 as F1
 import Function2 as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
+import Function5 as F5
 
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
-tau = 1E10
+tau = 0.001  # *10E9
 epsilon = 0.01
-Delimiter = ';'
+Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CH0 01Feb Setup 2 A.csv'
-ETFile1 = 'CH1 01Feb Setup 2 B.csv'
-ETFile2 = 'CH2 01Feb Setup 2 A.csv'
-ETFile3 = 'CH3 01Feb Setup 2 B.csv'
+# ETFile0 = 'CH0 01Feb Setup 2 A.csv'
+# ETFile1 = 'CH1 01Feb Setup 2 B.csv'
+# ETFile2 = 'CH2 01Feb Setup 2 A.csv'
+# ETFile3 = 'CH3 01Feb Setup 2 B.csv'
+ETFile0 = 'CSV1_D1.csv'
+ETFile1 = 'CSV1_D2.csv'
+ETFile2 = 'CSV1_D3.csv'
+ETFile3 = 'CSV1_D4.csv'
 Det_Pos = 'positionoutput2.csv'
 # Number_of_Files = 4
 start = timer()
 
 print("Started!")
 CSV_Start = timer()
-arr0, Det_Pos_arr = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0, Det_Pos)
+arr0, Det_Pos_arr = Ex.CSV_Extract(';', Folder_Path, Det_Pos, Det_Pos)
+arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
 arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
 arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
@@ -82,54 +87,14 @@ print("F3 Done in {} s".format(timer() - F3_Start))
 
 F4_Start = timer()
 h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 2.5)
-points = F4.cones_generator(f3, 100, -2.5, 2.5, -2.5, 2.5, lim)
+points = F4.cones_generator(f3, 100, lim)
 data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
 
-''' Drawing all that '''
-fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
-                             per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
-                                             2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                                             3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                                             4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
-
-try:  # Colour map creation in try to prevent recreation error
-    color_array = plt.get_cmap('YlOrRd')(range(256))
-    color_array[:, -1] = np.linspace(0.0, 1.0, 256)
-    map_object = LSC.from_list(name='YlOrRd_alpha2', colors=color_array)
-    plt.colormaps.register(cmap=map_object)
-except ValueError:
-    pass
-
+F5_Start = timer()
+fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
 dets = ax[1].scatter([0.03, 0.03, 0.27452, 0.27452], [0.03, -0.03, 0, 0],
                      [0, 0, 0.17121, -0.17121], marker='o', s=100)
-XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=data, cmap="YlOrRd_alpha2")
-plt.colorbar(XYZ, location='left')
-
-hottest = np.max(data)
-hot = np.unravel_index(np.argmax(data), data.shape)
-std = np.std(data)
-# hotfinder, _ = nd.label((data >= hottest-10*std)*1)
-# hotarea = np.bincount(hotfinder.ravel())[1:]
-# print(hotarea)
-# hotdev = hotarea.mean()/2
-# print(hotarea, hotdev, "hot mean radius", std)
-# XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=hotfinder, cmap="YlOrRd_alpha2")
-# plt.colorbar(XYZ, location='left')
-
-var = int((std-voxel_r)//(2*voxel_r))  # NAH
-# var = int
-XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[hot[0] - var:hot[0] + var + 1, :, :], axis=0), cmap="YlOrRd")
-cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
-YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, hot[1] - var:hot[1] + var + 1, :], axis=1), cmap="YlOrRd")
-cb3 = plt.colorbar(YZ)
-XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, hot[2] - var:hot[2] + var + 1], axis=2), cmap="YlOrRd")
-cb4 = plt.colorbar(XY)
-ax[1].set_title('3D Graph')
-loclabel = ("Hottest voxel found at:\nX: %.5f\nY: %.5f\nZ: %.5f"
-            % (h[hot], v[hot], d[hot]))
-ax[2].text(x=-15, y=0, s=loclabel)
-plt.tight_layout()
-print("%.2f seconds run time" % (timer()-start))
+print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
 
