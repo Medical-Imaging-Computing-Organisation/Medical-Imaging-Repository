@@ -32,30 +32,24 @@ Function 4 (Richard) Generate set of points corresponding to cones:
 #     a, b = np.asanyarray(a), np.asanyarray(b)
 #    return a[...,None] + (b-a)[..., None]/(N-endpoint)*np.arange(N)
 # @njit(parallel=True)
-def cones_generator(a, p, Lmax=2.5):
+def cones_generator(a, p, Lmax):
     '''
     Ensure all inputs bare the same energy units, especially the electron 
     rest energy E=Me*c^2
     Parameters
     ----------
     a : array
-        The initial photon energy.
-    p : float
-        The energy deposited during the compton scatter.
-    xmin : float
-        The energy of the scattered photon.
-    xmax : float
-        The rest energy of the electron
-    ymin : float
-        somethin
+        The input array with N rows and 32 columns
+    p : integer
+        The number of points to generate along the x and y plane
+        equal to the square root of the number of points per cone
     Lmax: float
-        the upper limit on the modulus of all x y and z values.
+        the upper limit on the modulus of all x y and z values produced.
     Returns
     -------
-    theta : Float
-        The angle of the compton cone from the w axis. 
-    theta_err : Float
-        The error on the angle as derived from the compton energy equation.
+    points : array
+        array of points to be plotted by the heatmap, 
+        3 cartesian columns, N*p^2 rows of position 3-vectors
     '''
     theta = a[:, 0]
     umax = 2.5
@@ -70,19 +64,11 @@ def cones_generator(a, p, Lmax=2.5):
         x = np.linspace(-val, val, p)
         u[i], v[i] = np.meshgrid(x, x, sparse = False)
         
-    print('u=')
-    print(u)
     r = np.multiply(p**2,a.shape[0])
     # w = cone(u, v, theta)
     w=np.sqrt(np.add(np.square(u),np.square(v)))
     #w=w/np.tan(theta)
-    print(w.shape)
     w=np.einsum('ijk,i->ijk',w,1/np.tan(theta))
-    
-    print('w=')
-    print(w.shape)
-    print(u.shape)
-    print(v.shape)
     
     vector = np.array([u,v,w]).T
     
@@ -99,7 +85,6 @@ def cones_generator(a, p, Lmax=2.5):
     # print(f'memory used {lmu}')
     return vector
 
-
 ''' Building voxel grid '''
 def build_voxels(dnsy=51, lim=2.5):
     # dnsy number density operator
@@ -110,8 +95,6 @@ def build_voxels(dnsy=51, lim=2.5):
     h, v, d = np.meshgrid(x, y, z, sparse=False)  # Horizontal, vertical, depth
     data = np.zeros((dnsy, dnsy, dnsy))  # empty dataset
     return h, v, d, data, voxel_r, dnsy, lim
-
-
 
 def voxel_fit(h, v, d, xyz, shape, voxel_r):
     '''Fitting into voxels'''
@@ -174,7 +157,8 @@ if __name__ == "__main__":
     # process = psutil.Process(os.getpid())
     # base_memory_usage = process.memory_info().rss
     # start = timer()
-    points = cones_generator(array_in_test, 1000)
+    root_points = 1000
+    points = cones_generator(array_in_test, root_points)
     data = voxel_fit(h, v, d, points, data.shape, voxel_r)
 
     # for n in np.linspace(0, N, 20):
@@ -183,7 +167,6 @@ if __name__ == "__main__":
     # print(f"{timer()-start}", "seconds")
     # lmu = process.memory_info().rss - base_memory_usage
     # print(f'memory used {lmu}')
-
 
     ''' Drawing all that '''
     fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
