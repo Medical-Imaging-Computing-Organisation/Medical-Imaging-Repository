@@ -60,10 +60,10 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         for i in range(0, unique_index_pairs.size):
         
             # Generate OA Vector
-            vec_mat_arr[i,:3] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4]
+            vec_mat_arr[i,:3] = 0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4]
             vec_mat_arr[i, 3:6] = 0
             # Generate BA Vector (Values only)
-            vec_mat_arr[i,6:9] = DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4]
+            vec_mat_arr[i,6:9] = 0.01 *  DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4] - vec_mat_arr[i,:3]
                     
             # Calculate uncertainties on BA Vector
             vec_mat_arr[i,9:12] = np.power(np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4],2) + 
