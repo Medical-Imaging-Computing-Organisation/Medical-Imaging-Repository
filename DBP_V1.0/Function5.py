@@ -48,7 +48,7 @@ def draw(h, v, d, dnsy, data, voxel_r, dpa):
 
     dets = ax[1].scatter(0.01 * dpa[:, 1], 0.01 * dpa[:, 2],
                          0.01 * dpa[:, 3], marker='o', s=100,
-                         color=['red', 'yellow', 'green', 'blue'])
+                         c=dpa[:,0], cmap='gist_rainbow')
     for i in range(dpa.shape[0]):
         ax[1].text(x=0.01 * dpa[i, 1], y=0.01 * dpa[i, 2],
                    z=0.01 * dpa[i, 3] - 0.02, s=str(int(dpa[i, 0])),
