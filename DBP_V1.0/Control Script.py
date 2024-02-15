@@ -49,26 +49,26 @@ arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
 print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
 
 Coincidence_Start = timer()
-# Coincidence_Start01 = timer()
-# fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
-# print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
+Coincidence_Start01 = timer()
+fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
+print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
 
 Coincidence_Start02 = timer()
 fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
 print("Coincidence 50% done in {} s".format(timer()-Coincidence_Start02))
 
-# Coincidence_Start03 = timer()
-# fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
-# print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
+Coincidence_Start03 = timer()
+fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
+print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
 #
-# fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
 # fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
 # fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
 
 
 
 # fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
-fCo = np.vstack((fCo2))
+fCo = np.vstack((fCo1, fCo2, fCo3, fCo4))
 print("Overall Coincidence Done in {} s".format(timer() - Coincidence_Start))
 
 
@@ -92,12 +92,7 @@ data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
 
 F5_Start = timer()
-fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
-dets = ax[1].scatter(0.01*Det_Pos_arr[:, 1], 0.01*Det_Pos_arr[:, 2],
-                     0.01*Det_Pos_arr[:, 3], marker='o', s=100)
-for i in range(Det_Pos_arr.shape[0]):
-    ax[1].text(x=0.01*Det_Pos_arr[i, 1]-0.05, y=0.01*Det_Pos_arr[i, 2]-0.05,
-               z=0.01*Det_Pos_arr[i, 3]-0.1, s=str(int(Det_Pos_arr[i, 0])))
+fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r, Det_Pos_arr)
 print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
 

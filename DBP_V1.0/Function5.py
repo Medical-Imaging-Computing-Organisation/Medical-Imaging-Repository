@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
 
 
-def draw(h, v, d, dnsy, data, voxel_r):
+def draw(h, v, d, dnsy, data, voxel_r, dpa):
     fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
                                  per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
                                                  2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
@@ -45,4 +45,12 @@ def draw(h, v, d, dnsy, data, voxel_r):
     loclabel = ("Hottest voxel found at:\nX: %.5f\nY: %.5f\nZ: %.5f"
                 % (h[hot], v[hot], d[hot]))
     ax[2].text(x=-7.5, y=0, s=loclabel)
+
+    dets = ax[1].scatter(0.01 * dpa[:, 1], 0.01 * dpa[:, 2],
+                         0.01 * dpa[:, 3], marker='o', s=100,
+                         color=['red', 'yellow', 'green', 'blue'])
+    for i in range(dpa.shape[0]):
+        ax[1].text(x=0.01 * dpa[i, 1], y=0.01 * dpa[i, 2],
+                   z=0.01 * dpa[i, 3] - 0.02, s=str(int(dpa[i, 0])),
+                   ha='center', va='center')
     return fig, ax
