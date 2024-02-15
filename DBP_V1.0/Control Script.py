@@ -21,26 +21,26 @@ import Function5 as F5
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
-tau = 0.001  # *10E9
+tau = 0.001
 epsilon = 0.01
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-# ETFile0 = 'CH0 01Feb Setup 2 A.csv'
-# ETFile1 = 'CH1 01Feb Setup 2 B.csv'
-# ETFile2 = 'CH2 01Feb Setup 2 A.csv'
-# ETFile3 = 'CH3 01Feb Setup 2 B.csv'
-ETFile0 = 'CSV1_D1.csv'
-ETFile1 = 'CSV1_D2.csv'
-ETFile2 = 'CSV1_D3.csv'
-ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'positionoutput2.csv'
+ETFile0 = 'CSV1_Full_Exact_D1.csv'
+ETFile1 = 'CSV1_Full_Exact_D2.csv'
+ETFile2 = 'CSV1_Full_Exact_D3.csv'
+ETFile3 = 'CSV1_Full_Exact_D4.csv'
+# ETFile0 = 'CSV1_D1.csv'
+# ETFile1 = 'CSV1_D2.csv'
+# ETFile2 = 'CSV1_D3.csv'
+# ETFile3 = 'CSV1_D4.csv'
+Det_Pos = 'CSV 2.csv'
 # Number_of_Files = 4
 start = timer()
 
 print("Started!")
 CSV_Start = timer()
-arr0, Det_Pos_arr = Ex.CSV_Extract(';', Folder_Path, Det_Pos, Det_Pos)
+arr0, Det_Pos_arr = Ex.CSV_Extract(',', Folder_Path, Det_Pos, Det_Pos)
 arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
 arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
@@ -49,26 +49,26 @@ arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
 print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
 
 Coincidence_Start = timer()
-Coincidence_Start01 = timer()
-fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
-print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
+# Coincidence_Start01 = timer()
+# fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
+# print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
 
 Coincidence_Start02 = timer()
 fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
 print("Coincidence 50% done in {} s".format(timer()-Coincidence_Start02))
 
-Coincidence_Start03 = timer()
-fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
-print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
-
-fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+# Coincidence_Start03 = timer()
+# fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
+# print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
+#
+# fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
 # fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
 # fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
 
 
 
 # fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
-fCo = np.vstack((fCo1, fCo2, fCo3, fCo4))
+fCo = np.vstack((fCo2))
 print("Overall Coincidence Done in {} s".format(timer() - Coincidence_Start))
 
 
@@ -94,7 +94,10 @@ print("F4 Done in {} s".format(timer() - F4_Start))
 F5_Start = timer()
 fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
 dets = ax[1].scatter(0.01*Det_Pos_arr[:, 1], 0.01*Det_Pos_arr[:, 2],
-                     0.01*Det_Pos_arr[:, 3], marker='o', s=100), marker='o', s=100)
+                     0.01*Det_Pos_arr[:, 3], marker='o', s=100)
+for i in range(Det_Pos_arr.shape[0]):
+    ax[1].text(x=0.01*Det_Pos_arr[i, 1]-0.05, y=0.01*Det_Pos_arr[i, 2]-0.05,
+               z=0.01*Det_Pos_arr[i, 3]-0.1, s=str(int(Det_Pos_arr[i, 0])))
 print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
 
