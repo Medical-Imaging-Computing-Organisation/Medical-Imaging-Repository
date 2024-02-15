@@ -79,11 +79,11 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,13] = np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.cos(angle_arr[i,2]) - np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,2])
             vec_mat_arr[i,14] = np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.cos(angle_arr[i,2]) + np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,2])
             vec_mat_arr[i,15] = np.cos(angle_arr[i,1]) * np.sin(angle_arr[i,2])
-            vec_mat_arr[i,15] = np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.sin(angle_arr[i,2]) + np.cos(angle_arr[i,0]) * np.cos(angle_arr[i,2])
-            vec_mat_arr[i,16] = np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.sin(angle_arr[i,2]) - np.sin(angle_arr[i,0]) * np.cos(angle_arr[i,2])
-            vec_mat_arr[i,17] = np.sin(angle_arr[i,1]) * (-1)
-            vec_mat_arr[i,18] = np.sin(angle_arr[i,0]) * np.cos(angle_arr[i,1])
-            vec_mat_arr[i,19] = np.cos(angle_arr[i,0]) * np.cos(angle_arr[i,1])
+            vec_mat_arr[i,16] = np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.sin(angle_arr[i,2]) + np.cos(angle_arr[i,0]) * np.cos(angle_arr[i,2])
+            vec_mat_arr[i,17] = np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.sin(angle_arr[i,2]) - np.sin(angle_arr[i,0]) * np.cos(angle_arr[i,2])
+            vec_mat_arr[i,18] = np.sin(angle_arr[i,1]) * (-1)
+            vec_mat_arr[i,19] = np.sin(angle_arr[i,0]) * np.cos(angle_arr[i,1])
+            vec_mat_arr[i,20] = np.cos(angle_arr[i,0]) * np.cos(angle_arr[i,1])
         
             # Generating rotation matrix error elements
         
