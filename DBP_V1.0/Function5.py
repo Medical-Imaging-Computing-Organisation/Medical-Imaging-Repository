@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
 
 
-def draw(h, v, d, dnsy, data, voxel_r, lim):
+def draw(h, v, d, dnsy, data, voxel_r):
     fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
                                  per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
                                                  2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
