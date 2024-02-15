@@ -32,7 +32,7 @@ Folder_Path = os.getcwd()
 # ETFile3 = 'CH3 01Feb Setup 2 B.csv'
 ETFile0 = 'CSV1_Exact_G_D1.csv'
 
-Det_Pos = 'CSV 2_MC_1.csv'
+Det_Pos = 'CSV 2.csv'
 # Number_of_Files = 4
 start = timer()
 
@@ -74,7 +74,7 @@ f3 = F3.PutEmTogether(f1, f2)
 print("F3 Done in {} s".format(timer() - F3_Start))
 
 F4_Start = timer()
-h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 2.5)
+h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 1.5)
 points = F4.cones_generator(f3, 100, lim)
 data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
@@ -82,8 +82,10 @@ print("F4 Done in {} s".format(timer() - F4_Start))
 F5_Start = timer()
 fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
 dets = ax[1].scatter(0.01*Det_Pos_arr[:, 1], 0.01*Det_Pos_arr[:, 2],
-                     0.01*Det_Pos_arr[:, 3], marker='o', s=100), marker='o', s=100)
-
+                     0.01*Det_Pos_arr[:, 3], marker='o', s=100)
+for i in range(Det_Pos_arr.shape[0]):
+    ax[1].text(x=0.01*Det_Pos_arr[i, 1]-0.05, y=0.01*Det_Pos_arr[i, 2]-0.05,
+               z=0.01*Det_Pos_arr[i, 3]-0.1, s=str(int(Det_Pos_arr[i, 0])))
 print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
 
