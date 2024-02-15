@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
 
 
-def draw(h, v, d, dnsy, data, voxel_r):
+def draw(h, v, d, dnsy, data, voxel_r, lim):
     fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
                                  per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
                                                  2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
                                                  3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
                                                  4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
+    plt.tight_layout()
 
     try:  # Colour map creation in try to prevent recreation error
         color_array = plt.get_cmap('YlOrRd')(range(256))
@@ -31,10 +32,9 @@ def draw(h, v, d, dnsy, data, voxel_r):
     # print(hotarea, hotdev, "hot mean radius", std)
     # XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=hotfinder, cmap="YlOrRd_alpha2")
     # plt.colorbar(XYZ, location='left')
-    stdevdist = std * voxel_r
+    stdevdist = std * 2*voxel_r
     var = int(stdevdist // (2 * voxel_r))
     print("Plane depth", var)
-    # var = int
     XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[hot[0] - var:hot[0] + var + 1, :, :], axis=0), cmap="YlOrRd")
     cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
     YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, hot[1] - var:hot[1] + var + 1, :], axis=1), cmap="YlOrRd")
@@ -44,6 +44,5 @@ def draw(h, v, d, dnsy, data, voxel_r):
     ax[1].set_title('3D Graph')
     loclabel = ("Hottest voxel found at:\nX: %.5f\nY: %.5f\nZ: %.5f"
                 % (h[hot], v[hot], d[hot]))
-    ax[2].text(x=-15, y=0, s=loclabel)
-    plt.tight_layout()
+    ax[2].text(x=-7.5, y=0, s=loclabel)
     return fig, ax
