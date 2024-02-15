@@ -93,8 +93,8 @@ print("F4 Done in {} s".format(timer() - F4_Start))
 
 F5_Start = timer()
 fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
-dets = ax[1].scatter([0.03, 0.03, 0.27452, 0.27452], [0.03, -0.03, 0, 0],
-                     [0, 0, 0.17121, -0.17121], marker='o', s=100)
+dets = ax[1].scatter(0.01*Det_Pos_arr[:, 1], 0.01*Det_Pos_arr[:, 2],
+                     0.01*Det_Pos_arr[:, 3], marker='o', s=100), marker='o', s=100)
 print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
 
