@@ -90,11 +90,11 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             # This requires a significant time investment towards tedious array multiplications, it will be done during 
             #         week 3 in time for the whole code throughput calculating errors
         
-            vec_mat_arr[i,21:31] = 0 # for now the errors are set to 0
+            vec_mat_arr[i,21:30] = 0 # for now the errors are set to 0
         
         
             # Copying across the scatterer and absorber indices for function 3
-            vec_mat_arr[i,31:33] = EArray[unique_index_pairs[i], 4:6]
+            vec_mat_arr[i,30:32] = EArray[unique_index_pairs[i], 4:6]
         
     
     
