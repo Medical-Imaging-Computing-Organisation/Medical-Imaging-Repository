@@ -80,12 +80,7 @@ data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
 
 F5_Start = timer()
-fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
-dets = ax[1].scatter(0.01*Det_Pos_arr[:, 1], 0.01*Det_Pos_arr[:, 2],
-                     0.01*Det_Pos_arr[:, 3], marker='o', s=100)
-for i in range(Det_Pos_arr.shape[0]):
-    ax[1].text(x=0.01*Det_Pos_arr[i, 1]-0.05, y=0.01*Det_Pos_arr[i, 2]-0.05,
-               z=0.01*Det_Pos_arr[i, 3]-0.1, s=str(int(Det_Pos_arr[i, 0])))
+fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r, Det_Pos_arr)
 print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
 
