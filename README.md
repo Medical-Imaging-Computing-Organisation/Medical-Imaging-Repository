@@ -7,13 +7,13 @@
 
 
 - Finalise the cone generation segment of the algorithm
-- Optimise coincidence detection using numba and CPU parallelisation -> Send Back-To-Back detection off to lab data team
+- Finalise identification of coincidences
 
 ### Image Reconstruction Current Roles:
 
 - Finalise cone generation: Chris, Richard, Adam
 
-- Optimise coincidence detection: Alfie
+- Finalise coincidence detection: Alfie
 
 ### Agreed Formats
 
@@ -48,33 +48,4 @@ Output from Meshgrid and Heatmap:
 - 3D image displaying voxels, colour coded according to number of cones that have passed through them
 - 2D slice images for planar compression of the 3D images
 
-
-## Monte Carlo:
-
-- Produce a simple spectrum to give to Experimental Lab team
-- Generate simple data for IR team testing purposes
-
-
-### Monte Carlo Current Roles:
-
-- Coding primary generator and step action: James
-- Coding event action, sum and round (outputting into an array): Euan
-- Data postprocessing in Python: Lorea
-(May need to schedule a meeting between Lorea and Chris once Chris has CPU parallelization working to see if Lorea's postprocessing code can be sped up)
-
-
-
-
-# Medical Imaging Computing Completed Goals:
-
-## Image Reconstruction:
-
-- Write code for extracting from pre-agreed CSV-style data set provided by Labs. (Chris)
-- Write code for identifying which events are coincident and correspond to a compton scatter followed by photoelectric absorption. Discard other events. (Alfie)
-- Write code for generating meshgrid and heatmap for image production (Adam)
-
-## Monte Carlo:
-
-- Attend Tony's lessons on Geant4
-- Learn the relevant physics and equations required for possible events within the detectors, in preparation for predictive modelling. (Essentially already programmed in to Geant4)
 
