@@ -52,8 +52,7 @@ def cones_generator(a, p, Lmax, n0 = 100):
         3 cartesian columns, N*p^2 rows of position 3-vectors
     '''
     theta = a[:, 0]
-    alpha = 1.5
-    umax = p * np.sqrt(np.divide(np.sin(theta), alpha * n0 * np.pi))
+    umax = np.divide(p,2) * np.sqrt(np.divide(np.sin(theta), n0))
 
     x = np.linspace(-umax, umax, p).T
     u = np.empty((theta.size, p, p), dtype=np.float32)
