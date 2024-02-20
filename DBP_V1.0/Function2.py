@@ -75,17 +75,17 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,:3] = 0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4]
             vec_mat_arr[i, 3:6] = 0
             # Generate BA Vector (Values only)
-            vec_mat_arr[i,6:9] = 0.01 *  DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4] - vec_mat_arr[i,:3]
-            
+            vec_mat_arr[i,6:9] = 0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4] - vec_mat_arr[i,:3]
+
             # Calculate Normalised BA Vector
             Normalised_BA[i] = vec_mat_arr[i,6:9] / np.sqrt(np.dot(vec_mat_arr[i,6:9], vec_mat_arr[i,6:9]))
-                    
+
             # Calculate uncertainties on BA Vector
             vec_mat_arr[i,9:12] = 0
-            
-            
+
+
             # Rodrigues' rotation matrix formulation
-            
+
             # Filter for when unit-z vector and BA are parallel/antiparallel
             if np.dot(e_z, Normalised_BA[i]) == 1:
                 vec_mat_arr[i, 12:15] = [1, 0, 0]
@@ -95,34 +95,30 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
                 vec_mat_arr[i, 12:15] = [-1, 0, 0]
                 vec_mat_arr[i, 15:18] = [0, -1, 0]
                 vec_mat_arr[i, 18:21] = [0, 0, -1]
-                
             else:
                 # Calculate cross product of unit-z vector and normalised BA vector, accounting for right handed system
                 cross[i] = np.cross(e_z, Normalised_BA[i])
-                
+
                 mag_cross[i] = np.sqrt(np.dot(cross[i], cross[i]))
-                
+
                 a[i] = cross[i]/mag_cross[i]
-                
+
                 a_T[i] = a[i][:, np.newaxis]
 
                 # Calculating angle of rotation
                 theta[i] = np.arcsin(mag_cross[i])
-                
-                
-                
-                
-                
-                
-                # if Normalised_BA[i,2] < 0:
-                #     cross[i] = np.cross(e_z, Normalised_BA[i])
-                #     theta[i] = theta[i]
-                    
-                
-                
-                
-                
-                
+
+                # accounting for orientation relative to e_z
+                if Normalised_BA[i, 2] < 0:
+                    theta[i] = -theta[i]
+                elif Normalised_BA[i, 2] > 0:
+                    theta[i] = theta[i] + np.pi
+
+
+
+
+
+
                 # Calculating S_a tensor
                 S_a[i,0,0] = 0
                 S_a[i,0,1] = -a[i,2]
@@ -133,15 +129,15 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
                 S_a[i,2,0] = -a[i,1]
                 S_a[i,2,1] = a[i,0]
                 S_a[i,2,2] = 0
-                
-                
+
+
                 # Calculating Rotation Matrix
                 # R[i] = np.tensordot(a[i], a_T[i], axes=0) + (np.identity(3) - np.tensordot(a[i], a_T[i], axes=0)) * np.cos(theta[i]) + S_a * np.cos(theta[i])
-                
+
                 R[i] = np.identity(3) + np.sin(theta[i]) * S_a[i] + (1-np.cos(theta[i]))* np.matmul(S_a[i], S_a[i])
-                
-                
-                
+
+
+
                 # Generating rotation matrix elements for each pair
                 vec_mat_arr[i,12] = R[i,0,0]
                 vec_mat_arr[i,13] = R[i,0,1]
@@ -152,8 +148,8 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
                 vec_mat_arr[i,18] = R[i,2,0]
                 vec_mat_arr[i,19] = R[i,2,1]
                 vec_mat_arr[i,20] = R[i,2,2]
-            
-            
+
+
 
             # Generating rotation matrix error elements
 
