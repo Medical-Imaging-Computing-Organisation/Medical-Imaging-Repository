@@ -43,56 +43,139 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         out[ind] = True
         return out
     
-    # Use is_unique function to find all unique Scatterer and Absorber index pairs
+    # # Use is_unique function to find all unique Scatterer and Absorber index pairs
+    # unique_index_pairs = np.where(is_unique(EArray[:,4], EArray[:,5])==True)[0]
+    # # print(unique_index_pairs)
+    # # Define output array according to number of unique Scatterer-Absorber Pairs present in data
+    # vec_mat_arr = np.zeros((unique_index_pairs.size, 32), dtype=np.float32) # change to empty once errors are being calculated
+    
+    # # Define angle array for each pair and unit vectors
+    # angle_arr = np.zeros((unique_index_pairs.size, 3))
+    
+    
     unique_index_pairs = np.where(is_unique(EArray[:,4], EArray[:,5])==True)[0]
-    # print(unique_index_pairs)
-    # Define output array according to number of unique Scatterer-Absorber Pairs present in data
-    vec_mat_arr = np.zeros((unique_index_pairs.size, 32), dtype=np.float32) # change to empty once errors are being calculated
-    
-    # Define angle array for each pair and unit vectors
-    angle_arr = np.zeros((unique_index_pairs.size, 3))
-    
+    vec_mat_arr = np.zeros((unique_index_pairs.size, 32), dtype=np.float32)
+    Normalised_BA = np.zeros((unique_index_pairs.size, 3))
+    theta = np.zeros((unique_index_pairs.size, 1))
+    e_z = np.array([0, 0, 1])
+    a = np.zeros((unique_index_pairs.size, 3))
+    a_T = np.zeros((unique_index_pairs.size, 3, 1))
+    cross = np.zeros((unique_index_pairs.size, 3))
+    mag_cross = np.zeros((unique_index_pairs.size, 1))
+    S_a = np.zeros((unique_index_pairs.size, 3, 3))
+    R = np.zeros((unique_index_pairs.size, 3, 3))
 
     
     # Iterable - calculating vector and matrix elements
     # @njit(parallel=True)
     def Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr, unique_index_pairs):
         for i in range(0, unique_index_pairs.size):
-        
+
             # Generate OA Vector
             vec_mat_arr[i,:3] = 0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4]
             vec_mat_arr[i, 3:6] = 0
             # Generate BA Vector (Values only)
             vec_mat_arr[i,6:9] = 0.01 *  DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4] - vec_mat_arr[i,:3]
+            
+            # Calculate Normalised BA Vector
+            Normalised_BA[i] = vec_mat_arr[i,6:9] / np.sqrt(np.dot(vec_mat_arr[i,6:9], vec_mat_arr[i,6:9]))
                     
             # Calculate uncertainties on BA Vector
-            vec_mat_arr[i,9:12] = np.power(np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4],2) + 
-                                      np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4],2), 0.5)
-        
-            # Calculating angles for each pair
-            angle_arr[i,0] = np.arccos(vec_mat_arr[i,8]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle alpha
-            angle_arr[i,1] = np.arccos(vec_mat_arr[i,7]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle beta
-            angle_arr[i,2] = np.arccos(vec_mat_arr[i,6]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle gamma
-        
-            # Generating rotation matrix elements for each pair
-            vec_mat_arr[i,12] = np.cos(angle_arr[i,1]) * np.cos(angle_arr[i,2])
-            vec_mat_arr[i,13] = np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.cos(angle_arr[i,2]) - np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,2])
-            vec_mat_arr[i,14] = np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.cos(angle_arr[i,2]) + np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,2])
-            vec_mat_arr[i,15] = np.cos(angle_arr[i,1]) * np.sin(angle_arr[i,2])
-            vec_mat_arr[i,16] = np.sin(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.sin(angle_arr[i,2]) + np.cos(angle_arr[i,0]) * np.cos(angle_arr[i,2])
-            vec_mat_arr[i,17] = np.cos(angle_arr[i,0]) * np.sin(angle_arr[i,1]) * np.sin(angle_arr[i,2]) - np.sin(angle_arr[i,0]) * np.cos(angle_arr[i,2])
-            vec_mat_arr[i,18] = np.sin(angle_arr[i,1]) * (-1)
-            vec_mat_arr[i,19] = np.sin(angle_arr[i,0]) * np.cos(angle_arr[i,1])
-            vec_mat_arr[i,20] = np.cos(angle_arr[i,0]) * np.cos(angle_arr[i,1])
-        
+            vec_mat_arr[i,9:12] = 0
+            
+            
+            # Rodrigues' rotation matrix formulation
+            
+            # Filter for when unit-z vector and BA are parallel/antiparallel
+            if np.dot(e_z, Normalised_BA[i]) == 1:
+                vec_mat_arr[i,12] = 1
+                vec_mat_arr[i,13] = 0
+                vec_mat_arr[i,14] = 0
+                vec_mat_arr[i,15] = 0
+                vec_mat_arr[i,16] = 1
+                vec_mat_arr[i,17] = 0
+                vec_mat_arr[i,18] = 0
+                vec_mat_arr[i,19] = 0
+                vec_mat_arr[i,20] = 1
+                
+            elif np.dot(e_z, Normalised_BA[i]) == -1:
+                vec_mat_arr[i,12] = -1
+                vec_mat_arr[i,13] = 0
+                vec_mat_arr[i,14] = 0
+                vec_mat_arr[i,15] = 0
+                vec_mat_arr[i,16] = -1
+                vec_mat_arr[i,17] = 0
+                vec_mat_arr[i,18] = 0
+                vec_mat_arr[i,19] = 0
+                vec_mat_arr[i,20] = -1
+                
+            else:
+                # Calculate cross product of unit-z vector and normalised BA vector, accounting for right handed system
+                cross[i] = np.cross(e_z, Normalised_BA[i])
+                
+                mag_cross[i] = np.sqrt(np.dot(cross[i], cross[i]))
+                
+                a[i] = cross[i]/mag_cross[i]
+                
+                a_T[i] = a[i][:, np.newaxis]
+
+                # Calculating angle of rotation
+                theta[i] = np.arcsin(mag_cross[i])
+                
+                
+                
+                
+                
+                
+                # if Normalised_BA[i,2] < 0:
+                #     cross[i] = np.cross(e_z, Normalised_BA[i])
+                #     theta[i] = theta[i]
+                    
+                
+                
+                
+                
+                
+                # Calculating S_a tensor
+                S_a[i,0,0] = 0
+                S_a[i,0,1] = -a[i,2]
+                S_a[i,0,2] = a[i,1]
+                S_a[i,1,0] = a[i,2]
+                S_a[i,1,1] = 0
+                S_a[i,1,2] = -a[i,0]
+                S_a[i,2,0] = -a[i,1]
+                S_a[i,2,1] = a[i,0]
+                S_a[i,2,2] = 0
+                
+                
+                # Calculating Rotation Matrix
+                # R[i] = np.tensordot(a[i], a_T[i], axes=0) + (np.identity(3) - np.tensordot(a[i], a_T[i], axes=0)) * np.cos(theta[i]) + S_a * np.cos(theta[i])
+                
+                R[i] = np.identity(3) + np.sin(theta[i]) * S_a[i] + (1-np.cos(theta[i]))* np.matmul(S_a[i], S_a[i])
+                
+                
+                
+                # Generating rotation matrix elements for each pair
+                vec_mat_arr[i,12] = R[i,0,0]
+                vec_mat_arr[i,13] = R[i,0,1]
+                vec_mat_arr[i,14] = R[i,0,2]
+                vec_mat_arr[i,15] = R[i,1,0]
+                vec_mat_arr[i,16] = R[i,1,1]
+                vec_mat_arr[i,17] = R[i,1,2]
+                vec_mat_arr[i,18] = R[i,2,0]
+                vec_mat_arr[i,19] = R[i,2,1]
+                vec_mat_arr[i,20] = R[i,2,2]
+            
+            
+
             # Generating rotation matrix error elements
-        
+
             # This requires a significant time investment towards tedious array multiplications, it will be done during 
             #         week 3 in time for the whole code throughput calculating errors
-        
+
             vec_mat_arr[i,21:30] = 0 # for now the errors are set to 0
-        
-        
+
+
             # Copying across the scatterer and absorber indices for function 3
             vec_mat_arr[i,30:32] = EArray[unique_index_pairs[i], 4:6]
         
@@ -101,5 +184,5 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
         # return the vector & matrix array
         return vec_mat_arr
 
-    output_arr = Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, angle_arr, unique_index_pairs)
+    output_arr = Populate_Output_Array(EArray, DetectorArray, vec_mat_arr, theta, unique_index_pairs)
     return output_arr
