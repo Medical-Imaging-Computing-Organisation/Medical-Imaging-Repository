@@ -88,26 +88,13 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             
             # Filter for when unit-z vector and BA are parallel/antiparallel
             if np.dot(e_z, Normalised_BA[i]) == 1:
-                vec_mat_arr[i,12] = 1
-                vec_mat_arr[i,13] = 0
-                vec_mat_arr[i,14] = 0
-                vec_mat_arr[i,15] = 0
-                vec_mat_arr[i,16] = 1
-                vec_mat_arr[i,17] = 0
-                vec_mat_arr[i,18] = 0
-                vec_mat_arr[i,19] = 0
-                vec_mat_arr[i,20] = 1
-                
+                vec_mat_arr[i, 12:15] = [1, 0, 0]
+                vec_mat_arr[i, 15:18] = [0, 1, 0]
+                vec_mat_arr[i, 18:21] = [0, 0, 1]
             elif np.dot(e_z, Normalised_BA[i]) == -1:
-                vec_mat_arr[i,12] = -1
-                vec_mat_arr[i,13] = 0
-                vec_mat_arr[i,14] = 0
-                vec_mat_arr[i,15] = 0
-                vec_mat_arr[i,16] = -1
-                vec_mat_arr[i,17] = 0
-                vec_mat_arr[i,18] = 0
-                vec_mat_arr[i,19] = 0
-                vec_mat_arr[i,20] = -1
+                vec_mat_arr[i, 12:15] = [-1, 0, 0]
+                vec_mat_arr[i, 15:18] = [0, -1, 0]
+                vec_mat_arr[i, 18:21] = [0, 0, -1]
                 
             else:
                 # Calculate cross product of unit-z vector and normalised BA vector, accounting for right handed system
