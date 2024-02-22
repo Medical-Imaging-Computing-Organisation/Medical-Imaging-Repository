@@ -75,7 +75,7 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,:3] = 0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4]
             vec_mat_arr[i, 3:6] = 0
             # Generate BA Vector (Values only)
-            vec_mat_arr[i,6:9] = 0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4] - vec_mat_arr[i,:3]
+            vec_mat_arr[i,6:9] = -(0.01 * DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4] - vec_mat_arr[i,:3])
 
             # Calculate Normalised BA Vector
             Normalised_BA[i] = vec_mat_arr[i,6:9] / np.sqrt(np.dot(vec_mat_arr[i,6:9], vec_mat_arr[i,6:9]))
@@ -110,9 +110,9 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
 
                 # accounting for orientation relative to e_z
                 if Normalised_BA[i, 2] < 0:
-                    theta[i] = -theta[i]
-                elif Normalised_BA[i, 2] > 0:
-                    theta[i] = theta[i] + np.pi
+                    theta[i] = -theta[i] + np.pi
+                #elif Normalised_BA[i, 2] > 0:
+                    #theta[i] = theta[i]
 
 
 
