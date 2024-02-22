@@ -5,7 +5,7 @@ Created on Thu Jan 25 15:11:04 2024
 @author: Richard Malone
 """
 import numpy as np
-
+import matplotlib.pyplot as plt
 '''
 Function 1 (Richard)
 -------------------
@@ -96,10 +96,11 @@ if __name__ == "__main__":
     # array is a 4xN array
     # array_in is the
     N = 1000000
-    theta = np.linspace(1, 180, N)
+    theta = np.linspace(0, 181, N)
     theta = np.divide(np.multiply(theta,np.pi),180)
-    E0 = 200 #kev
-    Me = 510.99895000 #kev
+    E0 = 0.662 #Mev
+    dE0 = dE0 = 3E-5 
+    Me = 0.51099895000 #Mev
     scab = np.zeros((2,N), dtype = int)
     scab[0] = np.random.randint(1,5+1, N)
     scab[1] = np.random.randint(6,10+1,N)
@@ -113,21 +114,42 @@ if __name__ == "__main__":
     E2 = test_energy(theta, E0, Me)
     E1 = E0-E2
     array_in = np.empty((N,6), dtype=np.float32)
-    print(array_in)
     array_in[:,0] = E1
     array_in[:,1] = E2
     array_in[:,4] = scab[0]
     array_in[:,5] = scab[1]
-    print(array_in)
 
     r, c = np.shape(array_in)
     a= np.empty((N,4), dtype=np.float32)
-    a = compton_function(a, array_in, E0, Me)
-    print (a)
+    a = compton_function(a, array_in, E0, dE0, Me)
+    print (a[:,0:2]*180/np.pi)
     theta_result = a[:,0]
-    perc = np.multiply(np.divide(np.abs(np.subtract(theta,theta_result)),theta),100)
+    raw_diff = np.abs(np.subtract(theta,theta_result))
+    perc = np.multiply(np.divide(raw_diff,theta),100)
     print(perc)
-    avg_perc = np.mean(perc)
+    avg_perc = np.mean(perc[1:perc.size])
     print(f'error percentage = {avg_perc}% deviation from expected angle.')
     degree_error_avg = avg_perc*180/(np.pi*100)
     print(f'or about {degree_error_avg} degrees')
+    fig, ax = plt.subplots()
+    ax.set_yscale("log")
+    ax.scatter(theta*180/np.pi, perc)
+    ax.set_title('Floating Point Errors in Function 1')
+    ax.set_xlim(-20, 200)
+    ax.set_xlabel('Chosen opening angle (degrees)')
+    ax.set_ylabel('percentage error')
+    ax.axhline(avg_perc, color = 'r')
+    ax.axhline(1, color = 'yellow')
+    ax.axvline(10, color = 'green')
+    ax.axvline(170,color = 'green')
+    plt.show()
+    
+    rdm = np.mean(raw_diff)
+    fig, ax = plt.subplots()
+    ax.scatter(theta*180/np.pi, raw_diff*180/np.pi)
+    ax.set_title('Floating Point Errors in Function 1')
+    ax.set_xlim(-20, 200)
+    ax.set_xlabel('Chosen opening angle (degrees)')
+    ax.set_ylabel('raw difference (degrees)')
+    ax.axhline(rdm, color = 'r')
+    plt.show
