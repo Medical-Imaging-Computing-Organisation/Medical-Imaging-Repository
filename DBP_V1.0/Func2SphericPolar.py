@@ -71,10 +71,7 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,9:12] = np.power(np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],4]),1:4],2) + 
                                       np.power(DetectorArray[np.where(DetectorArray[:,0]==EArray[unique_index_pairs[i],5]),1:4],2), 0.5)
         
-            # Calculating angles for each pair
-            angle_arr[i,0] = np.arccos(vec_mat_arr[i,8]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle alpha
-            angle_arr[i,1] = np.arccos(vec_mat_arr[i,7]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle beta
-            angle_arr[i,2] = np.arccos(vec_mat_arr[i,6]/np.linalg.norm(vec_mat_arr[i,6:9])) # angle gamma
+            
             #calculating beta moduli for each pair
             beta_arr[i,0] = np.linalg.norm(vec_mat_arr[i,6:9]) #beta
             beta_arr[i,1] = np.linalg.norm(vec_mat_arr[i,6:8]) #beta_T
@@ -94,19 +91,31 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,19] = 0 #R32 matrix component is 0, no rotation about x axis.
         
             # Generating rotation matrix error elements
-            vec_mat_arr[i,21]
-            vec_mat_arr[i,22]
-            vec_mat_arr[i,23]
-            vec_mat_arr[i,24]
-            vec_mat_arr[i,25] =  
-            vec_mat_arr[i,25] =by*np.sqrt(vec_mat_arr[i,25])/(b_t**3)
-            vec_mat_arr[i,26]
-            vec_mat_arr[i,27]
-            vec_mat_arr[i,28] = 0
             
-            vec_mat_arr[i,29] = (bz**2)[(bx*dbx)**2 + (by*dby)**2]+(b_t**4)*dbz**2
-            vec_mat_arr[i,29] = np.sqrt(vec_mat_arr[i,29])/(b**3)
-            dr33 = np.divide(dr33,beta_arr[i,0]**3)
+            # vec_mat_arr[i,21] = big horrid boyo number 1
+            
+            # vec_mat_arr[i,22] = (by*dbx)**2 + (bx*dby)**2
+            # vec_mat_arr[i,22] = bx*np.sqrt(vec_mat_arr[i,22])/(bt**3)
+            
+            # vec_mat_arr[i,23] =(dbx*(by**2+bz**2))**2 + (bx*by*dby)**2 + (bx*bz*dbz)**2
+            # vec_mat_arr[i,23] =np.sqrt(vec_mat_arr[i,23])/(b**3)
+            
+            # vec_mat_arr[i,24] = big horrid boyo number 2
+            
+            # vec_mat_arr[i,25] = (by*dbx)**2 + (bx*dby)**2
+            # vec_mat_arr[i,25] = by*np.sqrt(vec_mat_arr[i,25])/(b_t**3)
+            
+            # vec_mat_arr[i,26] =  (dby*(bx**2+bz**2))**2 + (by*bx*dbx)**2 + (by*bz*dbz)**2
+            # vec_mat_arr[i,26] = np.sqrt(vec_mat_arr[i,26])/(b**3)
+            
+            # vec_mat_arr[i,27] = ((bx*dbx)**2+(by*dby)**2)*(bz/bt)**2 + (bt*dbz)**2
+            # vec_mat_arr[i,27] = bz*np.sqrt(vec_mat_arr[i,27])/(b**3)
+            
+            # vec_mat_arr[i,28] = 0
+            
+            # vec_mat_arr[i,29] = (bz**2)((bx*dbx)**2 + (by*dby)**2)+(b_t**4)*dbz**2
+            # vec_mat_arr[i,29] = np.sqrt(vec_mat_arr[i,29])/(b**3)
+            
             # This requires a significant time investment towards tedious array multiplications, it will be done during 
             #         week 3 in time for the whole code throughput calculating errors
             #the "error matrix" may be easier to work out for the spherical polar rotation matrix than 
