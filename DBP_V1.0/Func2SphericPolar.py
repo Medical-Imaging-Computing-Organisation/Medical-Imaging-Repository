@@ -1,4 +1,4 @@
-import numpy as np
+ import numpy as np
 from numba import njit, prange
 
 def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
@@ -94,7 +94,19 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
             vec_mat_arr[i,19] = 0 #R32 matrix component is 0, no rotation about x axis.
         
             # Generating rotation matrix error elements
+            vec_mat_arr[i,21]
+            vec_mat_arr[i,22]
+            vec_mat_arr[i,23]
+            vec_mat_arr[i,24]
+            vec_mat_arr[i,25] =  
+            vec_mat_arr[i,25] =by*np.sqrt(vec_mat_arr[i,25])/(b_t**3)
+            vec_mat_arr[i,26]
+            vec_mat_arr[i,27]
+            vec_mat_arr[i,28] = 0
             
+            vec_mat_arr[i,29] = (bz**2)[(bx*dbx)**2 + (by*dby)**2]+(b_t**4)*dbz**2
+            vec_mat_arr[i,29] = np.sqrt(vec_mat_arr[i,29])/(b**3)
+            dr33 = np.divide(dr33,beta_arr[i,0]**3)
             # This requires a significant time investment towards tedious array multiplications, it will be done during 
             #         week 3 in time for the whole code throughput calculating errors
             #the "error matrix" may be easier to work out for the spherical polar rotation matrix than 
