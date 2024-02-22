@@ -101,6 +101,9 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
 
                 mag_cross[i] = np.sqrt(np.dot(cross[i], cross[i]))
 
+                if mag_cross[i] > 1:
+                    mag_cross[i] = 1
+
                 a[i] = cross[i]/mag_cross[i]
 
                 a_T[i] = a[i][:, np.newaxis]
