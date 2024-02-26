@@ -48,6 +48,14 @@ arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
 
 print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
 
+Fit_Start = timer()
+arr0_coeffs, arr0_difference = Df.detector_time_fit(arr0, False, False)
+arr1_coeffs, arr1_difference = Df.detector_time_fit(arr1, False, False)
+arr2_coeffs, arr2_difference = Df.detector_time_fit(arr2, False, False)
+arr3_coeffs, arr3_difference = Df.detector_time_fit(arr3, False, False)
+
+print("Detector Fits Done in {} s".format(timer() - Fit_Start))
+
 Coincidence_Start = timer()
 Coincidence_Start01 = timer()
 fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
