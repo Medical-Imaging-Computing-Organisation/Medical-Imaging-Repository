@@ -268,22 +268,22 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
             
             # testing specific value(s) MC gave us
             if i in range(4001, 4002):
-                print("------------------------")
-                print(i)
-                print("---")
-                print(tA[i])
+                #print("------------------------")
+                #print(i)
+                #print("---")
+                #print(tA[i])
                 # print(arrB_coeffs[1])
                 # print(arrB_coeffs[0])
-                print("-----")
-                print(initial_j)
-                print(search_min)
-                print(search_max)
+                #print("-----")
+                #print(initial_j)
+                #print(search_min)
+                #print(search_max)
                 # print(search_window)
-                print("-----")
+                #print("-----")
                 # print((tA[i] - arrB[8605:8610,2])**2)
-                print(j)        
-                print(test_min)
-                print(test_max)
+                #print(j)        
+                #print(test_min)
+                #print(test_max)
                 
             
             
@@ -293,7 +293,7 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
             
             # testing specific value(s) MC gave us
             if i in range(4001, 4002):
-                print(test_window)
+                #print(test_window)
                 
                 
             
