@@ -11,6 +11,7 @@ from timeit import default_timer as timer
 
 # import CSV_Multiple_Detector_File_Extraction as Ex
 import CSV_Data_Extraction as Ex
+import Detector_time_fit as Df
 import Find_True_Coincidences as Co
 import Function1 as F1
 import Function2 as F2
@@ -56,20 +57,21 @@ arr3_coeffs, arr3_difference = Df.detector_time_fit(arr3, False, False)
 
 print("Detector Fits Done in {} s".format(timer() - Fit_Start))
 
+
 Coincidence_Start = timer()
 Coincidence_Start01 = timer()
-fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1)
+fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr0_coeffs, arr1_coeffs, arr0_difference, arr1_difference)
 print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
 
 Coincidence_Start02 = timer()
-fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3)
+fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3, arr0_coeffs, arr3_coeffs, arr0_difference, arr3_difference)
 print("Coincidence 50% done in {} s".format(timer()-Coincidence_Start02))
 
 Coincidence_Start03 = timer()
-fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1)
+fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1, arr2_coeffs, arr1_coeffs, arr2_difference, arr1_difference)
 print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
 #
-fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3, arr2_coeffs, arr3_coeffs, arr2_difference, arr3_difference)
 # fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
 # fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
 

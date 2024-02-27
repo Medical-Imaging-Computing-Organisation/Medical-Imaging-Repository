@@ -72,7 +72,7 @@ arr1 = np.array([[1, 12, 1, 0.1, 0.2],
         ])
 '''
 
-def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
+def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeffs, arrA_difference, arrB_difference):
     '''
     @author = Alfie
     @coauthor = Chris
@@ -102,9 +102,9 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
     E0 : float
         Initial photon energy (=662 keV in most cases). Must be given in the
         same units as the energies of the events in the input arrays
-    arr0 : array
+    arrA : array
         Array of events which were observed in the first detector.
-    arr1 : array
+    arrB : array
         Array of events which were observed in the second detector.
 
     Returns
@@ -112,31 +112,45 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
     None.
 
     '''
-    ave_tstep0 = (arr0[-1, 2] - arr0[0, 2]) / arr0.shape[0]
-    ave_tstep1 = (arr1[-1, 2] - arr1[0, 2]) / arr1.shape[0]
-    
-    # Need to remove NaNs from being calculated by filtering tstep
-    
-    
-    
-    # determine the region in arr1 to examine for coincidences
-    test_window_size = int(5 * tau / ave_tstep1) # in dimensions of indices
-    
+    # ave_tstepA = (arrA[-1, 2] - arrA[0, 2]) / arrA.shape[0]
+    # ave_tstepB = (arrB[-1, 2] - arrB[0, 2]) / arrB.shape[0]
+    # print(f'ave_tstepA == {ave_tstepA}')
+    # print(f'ave_tstepB == {ave_tstepB}')
 
+    # determine the region in arrB to examine for coincidences
+    # test_window_size = int(5 * tau / ave_tstepB) # in dimensions of indices
+    search_window_size = 1000
+    test_window_size = 10
+    print(f'test_window_size is {test_window_size}')
+    # test_window_radius = 1
+    # print(f'test_window_radius is {test_window_radius}')
+
+    # # define an array to contain the coincident events
+    temp_arr = np.ndarray((arrA.shape[0], test_window_size, 6), dtype=np.float32)
+
+    # # define for use later (I had to change dtype to float32 so that my laptop could cope with the memory allocation)
+    package = np.empty((arrA.shape[0], test_window_size, 6), dtype=np.float32)
+    column0 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
+    column1 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
+    column2 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
+    column3 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
+    column4 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
+    column5 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
+    
     # define an array to contain the coincident events
-    temp_arr = np.ndarray((arr0.shape[0], test_window_size, 6), dtype=np.float32)
+    # temp_arr = np.ndarray((arrA.shape[0], int(2*test_window_radius+1), 6), dtype=np.float32)
 
-    # define for use later
-    package = np.empty((arr0.shape[0], test_window_size, 6))
-    column0 = np.empty((arr0.shape[0], test_window_size))
-    column1 = np.empty((arr0.shape[0], test_window_size))
-    column2 = np.empty((arr0.shape[0], test_window_size))
-    column3 = np.empty((arr0.shape[0], test_window_size))
-    column4 = np.empty((arr0.shape[0], test_window_size))
-    column5 = np.empty((arr0.shape[0], test_window_size))
+    # # define for use later (I had to change dtype to float32 so that my laptop could cope with the memory allocation)
+    # package = np.empty((arrA.shape[0], int(2*test_window_radius+1), 6), dtype=np.float32)
+    # column0 = np.empty((arrA.shape[0], int(2*test_window_radius+1)), dtype=np.float32)
+    # column1 = np.empty((arrA.shape[0], int(2*test_window_radius+1)), dtype=np.float32)
+    # column2 = np.empty((arrA.shape[0], int(2*test_window_radius+1)), dtype=np.float32)
+    # column3 = np.empty((arrA.shape[0], int(2*test_window_radius+1)), dtype=np.float32)
+    # column4 = np.empty((arrA.shape[0], int(2*test_window_radius+1)), dtype=np.float32)
+    # column5 = np.empty((arrA.shape[0], int(2*test_window_radius+1)), dtype=np.float32)
 
     @njit(parallel=True)
-    def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, ave_tstepA, ave_tstepB, package, column0, column1, column2, column3, column4, column5):
+    def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, arrA_coeffs, arrB_coeffs, arrA_difference, arrB_difference, package, column0, column1, column2, column3, column4, column5):
         '''
         @author = Alfie
         @coauthor = Chris
@@ -145,8 +159,8 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
         could correspond to a Compton scatter followed by a photoelectric
         absorption.
 
-        NOTE: Numba actually seems to slow this function down at the moment,
-        so probably just keep the njit line above commented out.
+        NOTE: for small datasets, keep the @njit line above commented out as
+        you'll be faster without it.
 
         Required Imports
         ----------
@@ -184,8 +198,8 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
         temp_arr : array
             Array of valid coincident scatter-absorption event pairs. Format:
 
-                [[E1, E2, delta_E1, delta_E2],
-                 [E1, E2, delta_E1, delta_E2],
+                [[E1, E2, delta_E1, delta_E2, scatIndex, absIndex],
+                 [E1, E2, delta_E1, delta_E2, scatIndex, absIndex],
                  ...]
 
             where E1 is the energy of the scattering event; E2 is the energy
@@ -197,12 +211,11 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
             operations are performed.
 
         '''
-        tstep_ratio_AB = ave_tstepA / ave_tstepB
-        print(tstep_ratio_AB * arrA.shape[0])
+        
 
         # extract time information from arrA and arrB
         tA = arrA[:, 2]
-        #tB = arrB[:, 2]
+        # tB = arrB[:, 2]
         delta_tA = arrA[:, 4]
         delta_tB = arrB[:, 4]
 
@@ -215,34 +228,99 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
         #EB = arrB[:, 1]
         delta_EA = arrA[:, 3]
         #delta_EB = arrB[:, 3]
+        
 
+        print('Starting Loop')
         for i in prange(0, arrA.shape[0]):
         # iterate over every event in arrA. For the i^th event:          
-
-            # define corresponding index j in arrB
-            j = int(max(0, min(tstep_ratio_AB * i, arrB.shape[0] - 1)))
-
+            
+            
+            
+            
+            # generate initial guess of j from linear fit
+            
+            
+            # alternative method of calculating j using detector linear fits
+            
+            
+            
+            
+            initial_j = int((tA[i]-arrB_coeffs[1])/arrB_coeffs[0])
+            
+            
+            
+            
+            
+            # use initial j guess to inform search window size
+            search_max = int(min(arrB[:,2].shape[0]-1, initial_j+search_window_size))
+            search_min = int(max(0, initial_j-search_window_size))
+            
+            search_window = arrB[int(search_min) : int(search_max)]
+            
+            j = search_min + np.argmin((tA[i] - search_window[:,2])**2 )
+        
+            
             # calculate limits of the testing window for the i^th event in arrA
-            test_max = int(max(0, min(j + 0.5 * test_window_size, arrB.shape[0])))
-            test_min = int(max(0, min(j - 0.5 * test_window_size, arrB.shape[0])))
-            test_window = arrB[test_min : test_max]
-
+            test_min = int(min(arrB[:,2].shape[0]-1-test_window_size, max(0, min(j - 1.5 * test_window_size, arrB.shape[0]))))
+            test_max = int(min(arrB[:,2].shape[0]-1, max(test_min+test_window_size, min(j + test_window_size, arrB.shape[0]))))
+            
+            
+            
+            # testing specific value(s) MC gave us
+            if i in range(4001, 4002):
+                print("------------------------")
+                print(i)
+                print("---")
+                print(tA[i])
+                # print(arrB_coeffs[1])
+                # print(arrB_coeffs[0])
+                print("-----")
+                print(initial_j)
+                print(search_min)
+                print(search_max)
+                # print(search_window)
+                print("-----")
+                # print((tA[i] - arrB[8605:8610,2])**2)
+                print(j)        
+                print(test_min)
+                print(test_max)
+                
+            
+            
+            
+            test_window = arrB[int(test_min) : int(test_max)]
+            
+            
+            # testing specific value(s) MC gave us
+            if i in range(4001, 4002):
+                print(test_window)
+                
+                
+            
             # check which elements in test_window are between limits of tau
-            time_test = np.where( (t_min[i] <= test_window[:,2] - delta_tB[j]) & (t_max[i] >= test_window[:,2] + delta_tB[j]) )
+            time_test = np.where( (t_min[i] <= test_window[:,2] - test_window[:,4]) & (t_max[i] >= test_window[:,2] + test_window[:,4]) )[0]
             coinc_events = test_window[time_test]
-
+            
+            # alternative time test
+            #coinc_events = test_window[(t_min[i] <= test_window[:,2] - delta_tB[j]) & (t_max[i] >= test_window[:,2] + delta_tB[j])]
+            
             # extract energy information from events which passed time test
             EB = coinc_events[:,1]
+            #print(EB)
             delta_EB = coinc_events[:,3]
-
+            
             # apply energy conservation test to events which passed time test
-            energy_test = np.where( (EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB) )
+            energy_test = np.where( (EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB) )[0]
             valid_events = coinc_events[energy_test]
 
-            # group valid events by time occurred relative to event i in arrA
+            # alternative energy test
+            #valid_events = coinc_events[(EA[i] + delta_EA[i] + EB + delta_EB >= E0 - epsilon) & (E0 + epsilon >= EA[i] - delta_EA[i] + EB - delta_EB)]
 
+            # group valid events by time occurred relative to event i in arrA
             events_before = valid_events[np.where(valid_events[:, 2] < tA[i])]
             events_after = valid_events[np.where(valid_events[:, 2] >= tA[i])]
+            #print(events_before, events_after)
+            #print(i, valid_events, events_before, events_after)
 
             # construct data columns to be added to the output array
 
@@ -285,17 +363,28 @@ def find_true_coincidences(tau, epsilon, E0, arr0, arr1):
             package[i, :, 5] = column5[i]
 
             # delete rows where photon was absorbed in its first interaction
-            noscat = np.where((column0[i] != 0) & (column1[i] - column3[i] < epsilon))[0]
-            package[i][noscat] = np.zeros(6)
+            #noscat = np.where((column0[i] != 0) & (column1[i] - column3[i] < epsilon))[0]
+            #print(noscat)
+            #package[i][noscat] = np.zeros(6)
 
             temp_arr[i] = package[i]
 
         return temp_arr
 
-    x = two_array_tester(tau, epsilon, E0, arr0, arr1, temp_arr, ave_tstep0, ave_tstep1, package, column0, column1, column2, column3, column4, column5)
+    output = two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, arrA_coeffs, arrB_coeffs, arrA_difference, arrB_difference, package, column0, column1, column2, column3, column4, column5)
     # get rid of the zeros
-    x = x[~np.all(x[:, :, :4] == 0, axis=2)]
-    return x
+    output = output[~np.all(output[:, :, :4] == 0, axis=2)]
+    '''
+    exp_runtime = arrA[-1, 2] - arrB[0, 2]
+    print(f'arrA ({arrA.shape[0]} events) was compared to arrB ({arrB.shape[0]} events).')
+    print(f'The script found {output.shape[0]} pairs of coincident events.')
+    print(f'The experiment ran for {exp_runtime} seconds.')
+    print(f'Therefore the number of coincidences detected per second was {output.shape[0] / exp_runtime}.')
+    '''
+    # print(output[np.where(output[:, 0] / output[:, 1] >= 2 * E0 / m_e)])
+    print(f'The array with {arrA.shape[0]} events was compared to the array with {arrB.shape[0]} events.')
+    print(f'The script found {output.shape[0]} event pairs which it thinks are good.')
+    return output
 
 def CSV_Extract_Multiple_Channel_Files(Delimiter, Number_of_Detectors, Folder_Path, ETFile0_Name, ETFile1_Name=None, ETFile2_Name=None, ETFile3_Name=None, ETFile4_Name=None, ETFile5_Name=None, ETFile6_Name=None, ETFile7_Name=None, File2_Name=None, File3_Name=None, Header=None):
     '''
