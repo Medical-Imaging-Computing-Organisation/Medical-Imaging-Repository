@@ -101,17 +101,122 @@ def CSV_Extract(Delimiter, Folder_Path, File1_Name, File2_Name=None, File3_Name=
 
 if __name__ == "__main__":
     
+    import os
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from timeit import default_timer as timer
+    
+    def detector_polynomial_time_fit(arr):
+        
+        
+        
+        # Extract the time column from the detector array
+        det_time_arr = arr[:,2]
+        
+        # # calculate the difference in times
+        # time = det_time_arr[1:] - det_time_arr[:-1]
+        
+        # calculate index values
+        index_values = np.arange(0, arr[:,2].shape[0], 1)
+        
+        
+        # # mean of data
+        # mean = np.mean(time)
+        
+        # # standard deviation of data
+        # std_dev = np.std(time)
+        
+        # # package return values
+        # return_arr[0] = mean+std_dev
+        # return_arr[1] = mean
+        # return_arr[2] = std_dev
+        
+        
+        # calculate linear time fit of detector array
+        coeffs = np.polyfit(index_values, det_time_arr, 1)
+        
+        # calculate difference between fit timestamp and actual timestamp
+        difference = arr[:,2] - (coeffs[0]*index_values + coeffs[1])
+        
+        
+        return coeffs, difference
 
-    EnergyTimeCSVName = 'test1.csv'
-    DetectorPositionCSVName = 'test2.csv'
-    DetectorPairingCSVName = 'test3.csv'
-    BaseLocation = str(Path("C:/Users/chris/Documents/Medical_Physics_Group_Study/Lab_CSVs"))
+    E0 = 0.662  # MeV
+    dE0 = 3E-5  # MeV
+    Me = 0.51099895000  # MeV
+    tau = 0.001
+    epsilon = 0.01
+    Delimiter = ';'
+    Header = 0
+    Folder_Path = os.getcwd()
+    ETFile0 = 'CH0 Feb08 Setup 3 A.csv'
+    # ETFile1 = 'CSV1_Full_Exact_D2.csv'
+    # ETFile2 = 'CSV1_Full_Exact_D3.csv'
+    # ETFile3 = 'CSV1_Full_Exact_D4.csv'
+    
+    # ETFile0 = 'CSV1_D1.csv'
+    # ETFile1 = 'CSV1_D2.csv'
+    # ETFile2 = 'CSV1_D3.csv'
+    # ETFile3 = 'CSV1_D4.csv'
+    # Det_Pos = 'CSV 2.csv'
 
+    print("Started!")
+    CSV_Start = timer()
+    # arr0, Det_Pos_arr = CSV_Extract(',', Folder_Path, Det_Pos, Det_Pos)
+    arr0 = CSV_Extract(Delimiter, Folder_Path, ETFile0)
+    # arr1 = CSV_Extract(Delimiter, Folder_Path, ETFile1)
+    # arr2 = CSV_Extract(Delimiter, Folder_Path, ETFile2)
+    # arr3 = CSV_Extract(Delimiter, Folder_Path, ETFile3)
 
-    EnergyTimeCSVLocation = BaseLocation + "\\" + EnergyTimeCSVName
-    DetectorPositionCSVLocation = BaseLocation + "\\" + DetectorPositionCSVName
-    DetectorPairingCSVLocation = BaseLocation + "\\" + DetectorPairingCSVName
+    print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
+    
+    # arr0_timestep = calculate_av_tstep(arr0)
+    # arr1_timestep = calculate_av_tstep(arr1)
+    # arr2_timestep = calculate_av_tstep(arr2)
+    # arr3_timestep = calculate_av_tstep(arr3)
+    
+    arr0_coeffs, arr0_difference = detector_polynomial_time_fit(arr0)
+    # arr1_coeffs = detector_polynomial_time_fit(arr1)
+    # arr2_coeffs = detector_polynomial_time_fit(arr2)
+    # arr3_coeffs = detector_polynomial_time_fit(arr3)
+    
+    print(arr0_coeffs)
+    # print(arr1_coeffs)
+    # print(arr2_coeffs)
+    # print(arr3_coeffs)
+    
+    
+    dummy_x_values_0 = np.arange(0, arr0[:,2].shape[0], 1)
+    # dummy_x_values_1 = np.arange(0, arr1[:,2].shape[0], 1)
+    # dummy_x_values_2 = np.arange(0, arr2[:,2].shape[0], 1)
+    # dummy_x_values_3 = np.arange(0, arr3[:,2].shape[0], 1)
+    
+    # calculating difference^2 between timestamp and fit
+    difference2 = (arr0[:,2] - (arr0_coeffs[0]*dummy_x_values_0 + arr0_coeffs[1]))
+    
+    
+    
+    fig, ax = plt.subplots()
+    # ax.scatter(dummy_x_values_0, arr0[:,2], label='Det0')
+    # ax.plot(dummy_x_values_1, arr1[:,2], label='Det1')
+    # ax.plot(dummy_x_values_2, arr2[:,2], label='Det2')
+    # ax.plot(dummy_x_values_3, arr3[:,2], label='Det3')
+    
+    # ax.plot(dummy_x_values_0, arr0_coeffs[0]*dummy_x_values_0**2 + arr0_coeffs[1]*dummy_x_values_0 + arr0_coeffs[2], label='Fit0', color='r')
+    
+    ax.plot(dummy_x_values_0, arr0_difference, label='Squared Difference')
+    
+    
+    
+    
+    # ax.plot(dummy_x_values_0, (arr0[:,2]-arr0_coeffs[1]-arr0_difference)/arr0_coeffs[0], label='Squared Difference')
+    
+    # ax.axhline(mean, 0, time.shape[0], color='g')
+    # ax.axhline(mean-std_dev, 0, time.shape[0], color='r')
+    # ax.axhline(mean+std_dev, 0, time.shape[0], color='r')
+    ax.set(xlabel='Detector Index', ylabel='Squared Difference of timestamp vs fit predicted timestamp')
+    ax.legend()
+    ax.grid()
 
-    start = timer()
-    x,y,z = CSV_Extract(BaseLocation, EnergyTimeCSVName, DetectorPositionCSVName, DetectorPairingCSVName)
-    print(timer()-start)
+    
+    plt.show()
