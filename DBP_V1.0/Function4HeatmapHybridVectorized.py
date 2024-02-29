@@ -28,7 +28,7 @@ Function 4 (Richard) Generate set of points corresponding to cones:
 #     return z
 
 # @njit(parallel=True)
-def cones_generator(a, p, Lmax, Measure=None):
+def cones_generator(a, p, Lmax, n0 = 100, Measure=None):
     '''
     Ensure all inputs bare the same energy units, especially the electron 
     rest energy E=Me*c^2
@@ -41,6 +41,8 @@ def cones_generator(a, p, Lmax, Measure=None):
         equal to the square root of the number of points per cone
     Lmax: float
         the upper limit on the modulus of all x y and z values produced.
+    n0 : float
+        the surface density of points to be generated per cone in units of points per m^2
     Returns
     -------
     points : array
@@ -48,9 +50,7 @@ def cones_generator(a, p, Lmax, Measure=None):
         3 cartesian columns, N*p^2 rows of position 3-vectors
     '''
     theta = a[:, 0]
-    n0 = 100  # points per m^2
-    alpha = 1.5
-    umax = p * np.sqrt(np.divide(np.sin(theta), alpha * n0 * np.pi))
+    umax = np.divide(p,2) * np.sqrt(np.divide(np.sin(theta), n0))
 
     x = np.linspace(-umax, umax, p).T
     u = np.empty((theta.size, p, p), dtype=np.float32)
