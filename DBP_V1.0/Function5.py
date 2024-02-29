@@ -32,22 +32,36 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         '''Gauss view'''
         gaussed = ndimage.gaussian_filter(data, 1)
         hottest = np.max(gaussed)
-        hot = np.unravel_index(np.argmax(gaussed), data.shape)
         std = np.std(gaussed)
         hotfinder, hotfinds = ndimage.label((gaussed >= hottest-1*std)*1)  # labels clusters of near hottest
         H = [list(zip(*np.where(hotfinder == k))) for k in range(1, hotfinds+1)]  # compiles indices of each cluster
         highcluster = np.argmax([np.sum([data[I] for I in H[i]]) for i in range(len(H))])+1  # selects highest cluster sum
         hotfinder = (hotfinder == highcluster)*1  # selects only highest cluster and norms to 1
+        if len(H[highcluster-1]) == 1:
+            com = H[highcluster-1][0]
+            loc = np.array([h[com], v[com], d[com]])
+            locvar = [vr, vr, vr]
+            var = [1, 1, 1]
+            return loc, com, locvar, var, hotfinder
+        else:
+            pass
+
         com = ndimage.center_of_mass(data, labels=hotfinder)  # locates centre of mass indices
         loc = np.interp(np.array(com), np.arange(h.shape[0]), h[0, :, 0])  # interpolates indices into locations
         loc[0:2] = loc[1::-1]  # swaps yxz into xyz
+
         ax[1].scatter(loc[0], loc[1], loc[2], marker='o', s=100, alpha=0.5)  # source located graph
 
         sizes = np.mean(np.abs(np.array(H[highcluster-1])-np.array(com)), axis=0)
-        locvar = sizes*2*vr
-        var = np.ceil(sizes).astype(int)
+        locvar = sizes*2*vr  # variation in real distance
+        var = np.ceil(sizes).astype(int)  # rounds plane var up
         print("Plane depths", var)
         com = tuple(np.rint(com).astype(int))  # rounds com decimals to integer indices
+
+        ax[1].plot([loc[0]]*2, [loc[1]]*2, [loc[2]-locvar[2], loc[2]+locvar[2]])
+        ax[1].plot([loc[0]]*2, [loc[1]-locvar[1], loc[1]+locvar[1]], [loc[2]]*2)
+        ax[1].plot([loc[0]-locvar[0], loc[0]+locvar[0]], [loc[1]]*2, [loc[2]]*2)
+
         return loc, com, locvar, var, hotfinder*data
 
     def planars(com, var):
@@ -82,8 +96,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
                            ha='center', va='center', clip_on=True)  # Numbers labeled
     fig, ax = mosaic()
     cmap()
-    # XYZ = ax[1].scatter(h, v, d)
-    # ax[1].voxels(np.ones(data.shape), alpha=0.12, edgecolor="k", shade=True)  # Voxel visualization
+
     loc, com, locvar, var, hotfinder = gaussing()
     xyz(data)
     planars(com, var)
