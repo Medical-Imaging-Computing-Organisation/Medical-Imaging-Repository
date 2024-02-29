@@ -6,7 +6,7 @@ Created on Tue Jan 30 14:07:55 2024
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap as LSC
+import Function5 as F5
 # from numba import njit
 # from timeit import default_timer as timer
 # import psutil
@@ -28,10 +28,10 @@ Function 4 (Richard) Generate set of points corresponding to cones:
 #     return z
 
 # @njit(parallel=True)
-def cones_generator(a, p, Lmax, n0 = 100):
+def cones_generator(a, p, Lmax, Measure=None):
     '''
-    Ensure the units of Lmax match the units of the scatterer position.
-    Ensure all inputs bare the correct units.
+    Ensure all inputs bare the same energy units, especially the electron 
+    rest energy E=Me*c^2
     Parameters
     ----------
     a : array
@@ -41,10 +41,6 @@ def cones_generator(a, p, Lmax, n0 = 100):
         equal to the square root of the number of points per cone
     Lmax: float
         the upper limit on the modulus of all x y and z values produced.
-        in meters.
-    n0 : float or int
-        the surface density of points on the cone to be generated 
-        in points per m^2
     Returns
     -------
     points : array
@@ -52,7 +48,9 @@ def cones_generator(a, p, Lmax, n0 = 100):
         3 cartesian columns, N*p^2 rows of position 3-vectors
     '''
     theta = a[:, 0]
-    umax = np.divide(p,2) * np.sqrt(np.divide(np.sin(theta), n0))
+    n0 = 100  # points per m^2
+    alpha = 1.5
+    umax = p * np.sqrt(np.divide(np.sin(theta), alpha * n0 * np.pi))
 
     x = np.linspace(-umax, umax, p).T
     u = np.empty((theta.size, p, p), dtype=np.float32)
@@ -69,15 +67,19 @@ def cones_generator(a, p, Lmax, n0 = 100):
     rotMatrix = np.array([[a[:, 14], a[:, 17], a[:, 20]],
                           [a[:, 15], a[:, 18], a[:, 21]],
                           [a[:, 16], a[:, 19], a[:, 22]]]).T
-    # print(vector)
+
     vector = np.einsum('...jk,...k', rotMatrix, vector)
     vector += a[:, 2:5]
-    vector = vector.reshape((r, 3))
-    # vector[:,0:2] -= 2.5
-    vector = np.delete(vector, np.where(np.abs(vector) > Lmax)[0], axis=0)
-    # lmu = process.memory_info().rss - base_memory_usage
-    # print(f'memory used {lmu}')
-    return vector
+    if Measure is not None:
+        vector = np.moveaxis(vector, [2], [0]).reshape((theta.size, -1, 3))
+        hits = np.invert(np.any(np.abs(vector) > Lmax, axis=2)).sum(axis=1)
+        vector = vector.reshape((r, 3))
+        vector = np.delete(vector, np.where(np.abs(vector) > Lmax)[0], axis=0)
+        return vector, hits
+    else:
+        vector = vector.reshape((r, 3))
+        vector = np.delete(vector, np.where(np.abs(vector) > Lmax)[0], axis=0)
+        return vector
 
 ''' Building voxel grid '''
 def build_voxels(dnsy=51, lim=2.5):
@@ -111,15 +113,15 @@ if __name__ == "__main__":
         pass
 
     # test data
-    N = 10
-    theta = np.pi * np.linspace(20, 40, N) / 180
-    x1 = np.linspace(0, 0, N)
+    N = 2
+    theta = np.pi * np.linspace(20, 20, N) / 180
+    x1 = np.linspace(-1, 1, N)
     y1 = np.linspace(0, 0, N)
-    z1 = np.linspace(0, 0, N)
+    z1 = np.linspace(-2, -2, N)
     null = np.linspace(0, 0, N)
     one = np.linspace(1, 1, N)
-    T = np.linspace(0, np.radians(80), N)
-    rotation = 2
+    T = np.linspace(np.radians(0), np.radians(0), N)
+    rotation = 1
     if rotation == 1:  # x-rotation
         R11, R12, R13 = one, null, null
         R21, R22, R23 = null, one * np.cos(T), -one * np.sin(T)
@@ -151,7 +153,7 @@ if __name__ == "__main__":
     # process = psutil.Process(os.getpid())
     # base_memory_usage = process.memory_info().rss
     # start = timer()
-    root_points = 1000
+    root_points = 100
     points = cones_generator(array_in_test, root_points, lim)
     data = voxel_fit(h, v, d, points, data.shape, voxel_r)
     # data[25, 25, 40] = 40
@@ -163,47 +165,5 @@ if __name__ == "__main__":
     # print(f'memory used {lmu}')
 
     ''' Drawing all that '''
-    fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
-                                 per_subplot_kw={1: {'projection': '3d', 'xlabel': 'x', 'ylabel': 'y', 'zlabel': 'z'},
-                                                 2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                                                 3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                                                 4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
-
-    try:  # Colour map creation in try to prevent recreation error
-        color_array = plt.get_cmap('YlOrRd')(range(256))
-        color_array[:, -1] = np.linspace(0.0, 1.0, 256)
-        map_object = LSC.from_list(name='YlOrRd_alpha2', colors=color_array)
-        plt.colormaps.register(cmap=map_object)
-    except ValueError:
-        pass
-
-    XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=data, cmap="YlOrRd_alpha2")
-    plt.colorbar(XYZ, location='left')
-
-    hottest = np.max(data)
-    hot = np.unravel_index(np.argmax(data), data.shape)
-    std = np.std(data)
-    # hotfinder, _ = nd.label((data >= hottest-10*std)*1)
-    # hotarea = np.bincount(hotfinder.ravel())[1:]
-    # print(hotarea)
-    # hotdev = hotarea.mean()/2
-    # print(hotarea, hotdev, "hot mean radius", std)
-    # XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=hotfinder, cmap="YlOrRd_alpha2")
-    # plt.colorbar(XYZ, location='left')
-    stdevdist = 1
-    var = int((stdevdist) // (2 * voxel_r))  # NAH
-    print("Plane depth", var)
-    # var = int
-    XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[hot[0] - var:hot[0] + var + 1, :, :], axis=0), cmap="YlOrRd")
-    cb2 = plt.colorbar(XZ)  # X-Z and Y-Z colour maps
-    YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, hot[1] - var:hot[1] + var + 1, :], axis=1), cmap="YlOrRd")
-    cb3 = plt.colorbar(YZ)
-    XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, hot[2] - var:hot[2] + var + 1], axis=2).T, cmap="YlOrRd")
-    cb4 = plt.colorbar(XY)
-    ax[1].set_title('3D Graph')
-    loclabel = ("Hottest voxel found at:\nX: %.5f\nY: %.5f\nZ: %.5f"
-                % (h[hot], v[hot], d[hot]))
-    ax[2].text(x=-15, y=0, s=loclabel)
-    plt.tight_layout()
-    print(voxel_r)
+    fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r)
     plt.show()
