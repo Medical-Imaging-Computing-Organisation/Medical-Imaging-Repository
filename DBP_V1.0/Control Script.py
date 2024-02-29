@@ -27,15 +27,15 @@ epsilon = 0.01
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CSV1_Full_Exact_D1.csv'
-ETFile1 = 'CSV1_Full_Exact_D2.csv'
-ETFile2 = 'CSV1_Full_Exact_D3.csv'
-ETFile3 = 'CSV1_Full_Exact_D4.csv'
+ETFile0 = 'MC_4Det_CSV1_Exact_G_D1.csv'
+ETFile1 = 'MC_4Det_CSV1_Exact_G_D2.csv'
+ETFile2 = 'MC_4Det_CSV1_Exact_G_D3.csv'
+ETFile3 = 'MC_4Det_CSV1_Exact_G_D4.csv'
 # ETFile0 = 'CSV1_D1.csv'
 # ETFile1 = 'CSV1_D2.csv'
 # ETFile2 = 'CSV1_D3.csv'
 # ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'CSV 2.csv'
+Det_Pos = 'CSV 2 MC 4Det.csv'
 # Number_of_Files = 4
 start = timer()
 
@@ -96,8 +96,8 @@ f3 = F3.PutEmTogether(f1, f2)
 print("F3 Done in {} s".format(timer() - F3_Start))
 
 F4_Start = timer()
-h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 2.5)
-points = F4.cones_generator(f3, 100, lim)
+h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 1.5)
+points = F4.cones_generator(f3, 10, lim)
 data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
 
