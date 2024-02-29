@@ -23,7 +23,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         except ValueError:
             pass
 
-    def xyz():
+    def xyz(data):
         '''Draw main 3D XYZ scatter plot'''
         XYZ = ax[1].scatter(h, v, d, marker='s', s=2000 / dnsy, c=data, cmap="YlOrRd_alpha2")
         plt.colorbar(XYZ, location='left')  # plots 3D heatmap
@@ -34,28 +34,37 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         hottest = np.max(gaussed)
         hot = np.unravel_index(np.argmax(gaussed), data.shape)
         std = np.std(gaussed)
-        hotfinder, _ = ndimage.label((gaussed >= hottest-1*std)*1)
-        hotarea = np.bincount(hotfinder.ravel())[1:]
-        hotradius = hotarea.mean()/2
-        var = np.round(hotradius).astype(int)
-        print("Plane depth", var)
-        return(hot, hotradius, var)
+        hotfinder, hotfinds = ndimage.label((gaussed >= hottest-1*std)*1)  # labels clusters of near hottest
+        H = [list(zip(*np.where(hotfinder == k))) for k in range(1, hotfinds+1)]  # compiles indices of each cluster
+        highcluster = np.argmax([np.sum([data[I] for I in H[i]]) for i in range(len(H))])+1  # selects highest cluster sum
+        hotfinder = (hotfinder == highcluster)*1  # selects only highest cluster and norms to 1
+        com = ndimage.center_of_mass(data, labels=hotfinder)  # locates centre of mass indices
+        loc = np.interp(np.array(com), np.arange(h.shape[0]), h[0, :, 0])  # interpolates indices into locations
+        loc[0:2] = loc[1::-1]  # swaps yxz into xyz
+        ax[1].scatter(loc[0], loc[1], loc[2], marker='o', s=100, alpha=0.5)  # source located graph
 
-    def planars(hot, var):
+        sizes = np.mean(np.abs(np.array(H[highcluster-1])-np.array(com)), axis=0)
+        locvar = sizes*2*vr
+        var = np.ceil(sizes).astype(int)
+        print("Plane depths", var)
+        com = tuple(np.rint(com).astype(int))  # rounds com decimals to integer indices
+        return loc, com, locvar, var, hotfinder*data
+
+    def planars(com, var):
         '''Planar views'''
-        XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[hot[0] - var:hot[0] + var + 1, :, :], axis=0), cmap="YlOrRd")
+        XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[com[0] - var[0]:com[0] + var[0] + 1, :, :], axis=0), cmap="YlOrRd")
         plt.colorbar(XZ)  # X-Z and Y-Z colour maps
-        YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, hot[1] - var:hot[1] + var + 1, :], axis=1), cmap="YlOrRd")
+        YZ = ax[3].pcolormesh(h[0], d[0], np.sum(data[:, com[1] - var[1]:com[1] + var[1] + 1, :], axis=1), cmap="YlOrRd")
         plt.colorbar(YZ)
-        XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, hot[2] - var:hot[2] + var + 1], axis=2).T, cmap="YlOrRd")
+        XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, com[2] - var[2]:com[2] + var[2] + 1], axis=2).T, cmap="YlOrRd")
         plt.colorbar(XY)
 
-    def info(hot, hotradius):
+    def info(loc, locvar):
         ax[1].set_title('3D Graph', va='top', fontsize=13)
         loclabel = (f'Hottest voxel found at:\n' +
-                    f'X: %.5f $\\pm$ %.5f\n' % (h[hot], hotradius*2*vr+vr) +
-                    f'Y: %.5f $\\pm$ %.5f\n' % (v[hot], hotradius*2*vr+vr) +
-                    f'Z: %.5f $\\pm$ %.5f' % (d[hot], hotradius*2*vr+vr))  # Location of hottest voxel
+                    f'X: %.5f $\\pm$ %.5f\n' % (loc[0], locvar[0]) +
+                    f'Y: %.5f $\\pm$ %.5f\n' % (loc[1], locvar[1]) +
+                    f'Z: %.5f $\\pm$ %.5f' % (loc[2], locvar[2]))  # Location of hottest voxel
         lim = np.max(h) + vr
         ax[1].set_ylim([-lim, lim])
         ax[1].set_xlim([-lim, lim])
@@ -73,8 +82,10 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
                            ha='center', va='center', clip_on=True)  # Numbers labeled
     fig, ax = mosaic()
     cmap()
-    xyz()
-    hot, hotradius, var = gaussing()
-    planars(hot, var)
-    info(hot, hotradius)
+    # XYZ = ax[1].scatter(h, v, d)
+    # ax[1].voxels(np.ones(data.shape), alpha=0.12, edgecolor="k", shade=True)  # Voxel visualization
+    loc, com, locvar, var, hotfinder = gaussing()
+    xyz(data)
+    planars(com, var)
+    info(loc, locvar)
     return fig, ax
