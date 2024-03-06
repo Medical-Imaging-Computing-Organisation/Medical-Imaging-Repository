@@ -35,18 +35,18 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         std = np.std(gaussed)
         hotfinder, hotfinds = ndimage.label((gaussed >= hottest-1*std)*1)  # labels clusters of near hottest
         H = [list(zip(*np.where(hotfinder == k))) for k in range(1, hotfinds+1)]  # compiles indices of each cluster
-        highcluster = np.argmax([np.sum([data[I] for I in H[i]]) for i in range(len(H))])+1  # selects highest cluster sum
-        hotfinder = (hotfinder == highcluster)*1  # selects only highest cluster and norms to 1
+        highcluster = np.argmax([np.sum([gaussed[I] for I in H[i]]) for i in range(len(H))])+1  # selects highest cluster sum
+        hotfinder2 = (hotfinder == highcluster)*1  # selects only highest cluster and norms to 1
         if len(H[highcluster-1]) == 1:
             com = H[highcluster-1][0]
             loc = np.array([h[com], v[com], d[com]])
             locvar = [vr, vr, vr]
             var = [1, 1, 1]
-            return loc, com, locvar, var, hotfinder
+            return loc, com, locvar, var, hotfinder2
         else:
             pass
 
-        com = ndimage.center_of_mass(data, labels=hotfinder)  # locates centre of mass indices
+        com = ndimage.center_of_mass(data, labels=hotfinder2)  # locates centre of mass indices
         loc = np.interp(np.array(com), np.arange(h.shape[0]), h[0, :, 0])  # interpolates indices into locations
         loc[0:2] = loc[1::-1]  # swaps yxz into xyz
 
@@ -54,6 +54,8 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
 
         sizes = np.mean(np.abs(np.array(H[highcluster-1])-np.array(com)), axis=0)
         locvar = sizes*2*vr  # variation in real distance
+        locvar[locvar == 0] = vr
+
         var = np.ceil(sizes).astype(int)  # rounds plane var up
         print("Plane depths", var)
         com = tuple(np.rint(com).astype(int))  # rounds com decimals to integer indices
@@ -62,7 +64,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         ax[1].plot([loc[0]]*2, [loc[1]-locvar[1], loc[1]+locvar[1]], [loc[2]]*2)
         ax[1].plot([loc[0]-locvar[0], loc[0]+locvar[0]], [loc[1]]*2, [loc[2]]*2)
 
-        return loc, com, locvar, var, hotfinder*data
+        return loc, com, locvar, var, (hotfinder!=0)*data
 
     def planars(com, var):
         '''Planar views'''
@@ -75,15 +77,15 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
 
     def info(loc, locvar):
         ax[1].set_title('3D Graph', va='top', fontsize=13)
-        loclabel = (f'Hottest voxel found at:\n' +
-                    f'X: %.5f $\\pm$ %.5f\n' % (loc[0], locvar[0]) +
-                    f'Y: %.5f $\\pm$ %.5f\n' % (loc[1], locvar[1]) +
-                    f'Z: %.5f $\\pm$ %.5f' % (loc[2], locvar[2]))  # Location of hottest voxel
+        loclabel = (f'Predicted source location at:\n' +
+                    f'X: %.5f $\\pm$ %.5f m\n' % (loc[0], locvar[0]) +
+                    f'Y: %.5f $\\pm$ %.5f m\n' % (loc[1], locvar[1]) +
+                    f'Z: %.5f $\\pm$ %.5f m' % (loc[2], locvar[2]))  # Location of hottest voxel
         lim = np.max(h) + vr
         ax[1].set_ylim([-lim, lim])
         ax[1].set_xlim([-lim, lim])
         ax[1].set_zlim([-lim, lim])
-        ax[2].text(x=-5.5 * lim, y=0, s=loclabel)
+        ax[2].text(x=-6.5 * lim, y=0, s=loclabel)
 
         '''Detector locations plotted & labeled'''
         if dpa is not None:
