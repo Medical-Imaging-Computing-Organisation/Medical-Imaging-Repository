@@ -14,7 +14,7 @@ import CSV_Data_Extraction as Ex
 import Detector_time_fit as Df
 import Find_True_Coincidences as Co
 import Function1 as F1
-import Function2 as F2
+import Func2SphericPolar as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
 import Function5 as F5
@@ -22,20 +22,24 @@ import Function5 as F5
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
-tau = 0.001
-epsilon = 0.01
+tau = 0.0001
+epsilon = 0.001
 Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CSV1_Full_Exact_D1.csv'
-ETFile1 = 'CSV1_Full_Exact_D2.csv'
-ETFile2 = 'CSV1_Full_Exact_D3.csv'
-ETFile3 = 'CSV1_Full_Exact_D4.csv'
+ETFile0 = 'CSV1_Exact_G_D1.csv'
+ETFile1 = 'CSV1_Exact_G_D2.csv'
+ETFile2 = 'CSV1_Exact_G_D3.csv'
+ETFile3 = 'CSV1_Exact_G_D4.csv'
+ETFile4 = 'CSV1_Exact_G_D5.csv'
+ETFile5 = 'CSV1_Exact_G_D6.csv'
+ETFile6 = 'CSV1_Exact_G_D7.csv'
+ETFile7 = 'CSV1_Exact_G_D8.csv'
 # ETFile0 = 'CSV1_D1.csv'
 # ETFile1 = 'CSV1_D2.csv'
 # ETFile2 = 'CSV1_D3.csv'
 # ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'CSV 2.csv'
+Det_Pos = 'CSV 2 MC 8Det.csv'
 # Number_of_Files = 4
 start = timer()
 
@@ -46,6 +50,10 @@ arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
 arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
 arr3 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile3)
+arr4 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile4)
+arr5 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile5)
+arr6 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile6)
+arr7 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile7)
 
 print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
 
@@ -54,33 +62,118 @@ arr0_coeffs, arr0_difference = Df.detector_time_fit(arr0, False, False)
 arr1_coeffs, arr1_difference = Df.detector_time_fit(arr1, False, False)
 arr2_coeffs, arr2_difference = Df.detector_time_fit(arr2, False, False)
 arr3_coeffs, arr3_difference = Df.detector_time_fit(arr3, False, False)
+arr4_coeffs, arr4_difference = Df.detector_time_fit(arr4, False, False)
+arr5_coeffs, arr5_difference = Df.detector_time_fit(arr5, False, False)
+arr6_coeffs, arr6_difference = Df.detector_time_fit(arr6, False, False)
+arr7_coeffs, arr7_difference = Df.detector_time_fit(arr7, False, False)
 
 print("Detector Fits Done in {} s".format(timer() - Fit_Start))
 
 
 Coincidence_Start = timer()
 Coincidence_Start01 = timer()
-fCo1 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr1, arr0_coeffs, arr1_coeffs, arr0_difference, arr1_difference)
-print("Coincidence 25% done in {} s".format(timer()-Coincidence_Start01))
+fCo04 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr4, arr0_coeffs, arr4_coeffs, arr0_difference, arr4_difference)
+print("Coincidence 04 done in {} s".format(timer()-Coincidence_Start01))
 
-Coincidence_Start02 = timer()
-fCo2 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr3, arr0_coeffs, arr3_coeffs, arr0_difference, arr3_difference)
-print("Coincidence 50% done in {} s".format(timer()-Coincidence_Start02))
+Coincidence_Start01 = timer()
+fCo05 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr5, arr0_coeffs, arr5_coeffs, arr0_difference, arr5_difference)
+print("Coincidence 05 done in {} s".format(timer()-Coincidence_Start01))
 
-Coincidence_Start03 = timer()
-fCo3 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr1, arr2_coeffs, arr1_coeffs, arr2_difference, arr1_difference)
-print("Coincidence 75% done in {} s".format(timer()-Coincidence_Start03))
+Coincidence_Start01 = timer()
+fCo06 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr6, arr0_coeffs, arr6_coeffs, arr0_difference, arr6_difference)
+print("Coincidence 06 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo07 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr4, arr0_coeffs, arr7_coeffs, arr0_difference, arr7_difference)
+print("Coincidence 07 done in {} s".format(timer()-Coincidence_Start01))
 #
-fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3, arr2_coeffs, arr3_coeffs, arr2_difference, arr3_difference)
+# fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3, arr2_coeffs, arr3_coeffs, arr2_difference, arr3_difference)
 # fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
 # fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+
+Coincidence_Start01 = timer()
+fCo14 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr4, arr1_coeffs, arr4_coeffs, arr1_difference, arr4_difference)
+print("Coincidence 14 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo15 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr5, arr1_coeffs, arr5_coeffs, arr1_difference, arr5_difference)
+print("Coincidence 15 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo16 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr6, arr1_coeffs, arr6_coeffs, arr1_difference, arr6_difference)
+print("Coincidence 16 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo17 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr4, arr1_coeffs, arr7_coeffs, arr1_difference, arr7_difference)
+print("Coincidence 17 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo24 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr4, arr2_coeffs, arr4_coeffs, arr2_difference, arr4_difference)
+print("Coincidence 24 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo24 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr4, arr2_coeffs, arr4_coeffs, arr2_difference, arr4_difference)
+print("Coincidence 24 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo25 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr5, arr2_coeffs, arr5_coeffs, arr2_difference, arr5_difference)
+print("Coincidence 25 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo26 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr6, arr2_coeffs, arr6_coeffs, arr2_difference, arr6_difference)
+print("Coincidence 26 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo27 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr7, arr2_coeffs, arr7_coeffs, arr2_difference, arr7_difference)
+print("Coincidence 27 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo34 = Co.find_true_coincidences(tau, epsilon, E0, arr3, arr4, arr3_coeffs, arr4_coeffs, arr3_difference, arr4_difference)
+print("Coincidence 34 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo35 = Co.find_true_coincidences(tau, epsilon, E0, arr3, arr5, arr3_coeffs, arr5_coeffs, arr3_difference, arr5_difference)
+print("Coincidence 35 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo36 = Co.find_true_coincidences(tau, epsilon, E0, arr3, arr6, arr3_coeffs, arr6_coeffs, arr3_difference, arr6_difference)
+print("Coincidence 36 done in {} s".format(timer()-Coincidence_Start01))
+
+Coincidence_Start01 = timer()
+fCo37 = Co.find_true_coincidences(tau, epsilon, E0, arr3, arr7, arr3_coeffs, arr7_coeffs, arr3_difference, arr7_difference)
+print("Coincidence 37 done in {} s".format(timer()-Coincidence_Start01))
+
+
+# Slicing arrays due to data size
+array_reducing_factor = 2
+
+fCo04 = fCo04[:int(fCo04.shape[0]/array_reducing_factor)]
+fCo05 = fCo05[:int(fCo05.shape[0]/array_reducing_factor)]
+fCo06 = fCo06[:int(fCo06.shape[0]/array_reducing_factor)]
+fCo07 = fCo07[:int(fCo07.shape[0]/array_reducing_factor)]
+fCo14 = fCo14[:int(fCo14.shape[0]/array_reducing_factor)]
+fCo15 = fCo15[:int(fCo15.shape[0]/array_reducing_factor)]
+fCo16 = fCo16[:int(fCo16.shape[0]/array_reducing_factor)]
+fCo17 = fCo17[:int(fCo17.shape[0]/array_reducing_factor)]
+fCo24 = fCo24[:int(fCo24.shape[0]/array_reducing_factor)]
+fCo25 = fCo25[:int(fCo25.shape[0]/array_reducing_factor)]
+fCo26 = fCo26[:int(fCo26.shape[0]/array_reducing_factor)]
+fCo27 = fCo27[:int(fCo27.shape[0]/array_reducing_factor)]
+fCo34 = fCo34[:int(fCo34.shape[0]/array_reducing_factor)]
+fCo35 = fCo35[:int(fCo35.shape[0]/array_reducing_factor)]
+fCo36 = fCo36[:int(fCo36.shape[0]/array_reducing_factor)]
+fCo37 = fCo37[:int(fCo37.shape[0]/array_reducing_factor)]
+
+
 
 
 
 # fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
-fCo = np.vstack((fCo1, fCo2, fCo3, fCo4))
+# fCo = np.vstack((fCo04, fCo05, fCo06, fCo14, fCo15, fCo16, fCo24, fCo25, fCo26, fCo34, fCo35, fCo36))
+fCo = np.vstack((fCo04, fCo05, fCo06, fCo07, fCo14, fCo15, fCo16, fCo17, fCo24, fCo25, fCo26, fCo27, fCo34, fCo35, fCo36, fCo37))
 print("Overall Coincidence Done in {} s".format(timer() - Coincidence_Start))
 
+# fCo = fCo[0:1]
 
 F1_Start = timer()
 a = np.empty((fCo.shape[0], 4), dtype=np.float32)
@@ -96,8 +189,8 @@ f3 = F3.PutEmTogether(f1, f2)
 print("F3 Done in {} s".format(timer() - F3_Start))
 
 F4_Start = timer()
-h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 2.5)
-points = F4.cones_generator(f3, 100, lim)
+h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 0.4)
+points = F4.cones_generator(f3, 100, lim, n0=800)
 data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
 
