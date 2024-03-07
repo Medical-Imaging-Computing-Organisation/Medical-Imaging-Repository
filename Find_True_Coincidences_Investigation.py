@@ -413,73 +413,72 @@ if __name__ == "__main__":
     counts = np.zeros(1)
     good_counts = np.zeros(1)
     #TODO: edit points to select a range of epsilon values for testing
-    points = np.linspace(0, 0.06)
+    points = np.linspace(0, 1)
     counter = 0
+    
+    # Monte Carlo final small dataset exact good
+    #TODO: edit the folder path to point to the list of good events
+    data_label = 'Monte Carlo final small short-run exact good'
+    Folder_Path = 'C:/Users/alfie/Documents/Full Small data set/Good Events/Exact Good'
+    ETFile0 = 'CSV1_Exact_G_D1 (7).csv'
+    ETFile1 = 'CSV1_Exact_G_D2.csv'
+    ETFile2 = 'CSV1_Exact_G_D3.csv'
+    ETFile3 = 'CSV1_Exact_G_D4.csv'
+    ETFile4 = 'CSV1_Exact_G_D5.csv'
+    ETFile5 = 'CSV1_Exact_G_D6.csv'
+    ETFile6 = 'CSV1_Exact_G_D7.csv'
+    ETFile7 = 'CSV1_Exact_G_D8.csv'
+    Delimiter = ','
+    tau = 0
+    epsilon = 0.1
+    E0 = 0.662
+
+    CSV_Start = timer()
+    arr0 = CSV_Extract(Delimiter, Folder_Path, ETFile0)
+    arr1 = CSV_Extract(Delimiter, Folder_Path, ETFile1)
+    arr2 = CSV_Extract(Delimiter, Folder_Path, ETFile2)
+    arr3 = CSV_Extract(Delimiter, Folder_Path, ETFile3)
+    arr4 = CSV_Extract(Delimiter, Folder_Path, ETFile4)
+    arr5 = CSV_Extract(Delimiter, Folder_Path, ETFile5)
+    arr6 = CSV_Extract(Delimiter, Folder_Path, ETFile6)
+    arr7 = CSV_Extract(Delimiter, Folder_Path, ETFile7)
+
+    good_out = np.zeros(8)
+    
+    arrays = (arr0, arr1, arr2, arr3, arr4, arr5, arr6, arr7)
+    
+    for x in range(8):
+        for y in range(x, 8):
+            if x == y:
+                pass
+            else:
+                arrA_coeffs, arrA_difference = detector_polynomial_time_fit(arrays[x])
+                arrB_coeffs, arrB_difference = detector_polynomial_time_fit(arrays[y])
+                good_out = np.vstack((good_out, find_true_coincidences(tau, epsilon, E0, arrays[x], arrays[y], arrA_coeffs, arrB_coeffs, arrA_difference, arrB_difference)))
+    
+    good_out = good_out[1:]
+    
     for test_eps in points:
         start = timer()
         counter = counter + 1
         print(f"Started loop {counter} / 50")
-    
-        # Monte Carlo final small dataset exact good
-        #TODO: edit the folder path to point to the list of good events
-        data_label = 'Monte Carlo final small short-run exact good'
-        Folder_Path = 'C:/Users/alfie/Documents/Full Small data set/Good Events/Exact Good'
-        ETFile0 = 'CSV1_Exact_G_D1 (7).csv'
-        ETFile1 = 'CSV1_Exact_G_D2.csv'
-        ETFile2 = 'CSV1_Exact_G_D3.csv'
-        ETFile3 = 'CSV1_Exact_G_D4.csv'
-        ETFile4 = 'CSV1_Exact_G_D5.csv'
-        ETFile5 = 'CSV1_Exact_G_D6.csv'
-        ETFile6 = 'CSV1_Exact_G_D7.csv'
-        ETFile7 = 'CSV1_Exact_G_D8.csv'
-        Delimiter = ','
-        tau = 0
-        epsilon = 0.1
-        E0 = 0.662
-    
-        CSV_Start = timer()
-        arr0 = CSV_Extract(Delimiter, Folder_Path, ETFile0)
-        arr1 = CSV_Extract(Delimiter, Folder_Path, ETFile1)
-        arr2 = CSV_Extract(Delimiter, Folder_Path, ETFile2)
-        arr3 = CSV_Extract(Delimiter, Folder_Path, ETFile3)
-        arr4 = CSV_Extract(Delimiter, Folder_Path, ETFile4)
-        arr5 = CSV_Extract(Delimiter, Folder_Path, ETFile5)
-        arr6 = CSV_Extract(Delimiter, Folder_Path, ETFile6)
-        arr7 = CSV_Extract(Delimiter, Folder_Path, ETFile7)
-    
-        good_out = np.zeros(8)
-        
-        arrays = (arr0, arr1, arr2, arr3, arr4, arr5, arr6, arr7)
-        
-        for x in range(8):
-            for y in range(x, 8):
-                if x == y:
-                    pass
-                else:
-                    arrA_coeffs, arrA_difference = detector_polynomial_time_fit(arrays[x])
-                    arrB_coeffs, arrB_difference = detector_polynomial_time_fit(arrays[y])
-                    good_out = np.vstack((good_out, find_true_coincidences(tau, epsilon, E0, arrays[x], arrays[y], arrA_coeffs, arrB_coeffs, arrA_difference, arrB_difference)))
-        
-        good_out = good_out[1:]
         
         # Monte Carlo final small dataset smeared
         #TODO: edit the folder path to point to the dataset you want to investigate
         data_label = 'Monte Carlo final short-run smeared'
-        Folder_Path = 'C:/Users/alfie/Documents/Full Small data set/Full Data Set/Smeared'
-        ETFile0 = 'CSV1_Full_Smeared_D1 (2).csv'
-        ETFile1 = 'CSV1_Full_Smeared_D2 (2).csv'
-        ETFile2 = 'CSV1_Full_Smeared_D3 (2).csv'
-        ETFile3 = 'CSV1_Full_Smeared_D4 (2).csv'
-        ETFile4 = 'CSV1_Full_Smeared_D5.csv'
-        ETFile5 = 'CSV1_Full_Smeared_D6.csv'
-        ETFile6 = 'CSV1_Full_Smeared_D7.csv'
-        ETFile7 = 'CSV1_Full_Smeared_D8.csv'
+        Folder_Path = 'C:/Users/alfie/Documents/Full Small data set/Full Data Set/Exact'
+        ETFile0 = 'CSV1_Full_Exact_D1 (2).csv'
+        ETFile1 = 'CSV1_Full_Exact_D2 (2).csv'
+        ETFile2 = 'CSV1_Full_Exact_D3 (2).csv'
+        ETFile3 = 'CSV1_Full_Exact_D4 (2).csv'
+        ETFile4 = 'CSV1_Full_Exact_D5.csv'
+        ETFile5 = 'CSV1_Full_Exact_D6.csv'
+        ETFile6 = 'CSV1_Full_Exact_D7.csv'
+        ETFile7 = 'CSV1_Full_Exact_D8.csv'
         Delimiter = ','
         tau = 0
         epsilon = test_eps
         E0 = 0.662
-        
-        print('Starting full smeared data')
         
         CSV_Start = timer()
         arr0 = CSV_Extract(Delimiter, Folder_Path, ETFile0)
