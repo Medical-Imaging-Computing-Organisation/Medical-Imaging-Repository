@@ -52,7 +52,7 @@ def Generate_Position_Vectors_And_Matrices(EArray, DetectorArray):
     
     # Define angle array for each pair and unit vectors
     angle_arr = np.zeros((unique_index_pairs.size, 3))
-    beta_arr = np.zeros((unique_index_pairs.size,2))
+    beta_arr = np.zeros((unique_index_pairs.size,4))
     
 
     
