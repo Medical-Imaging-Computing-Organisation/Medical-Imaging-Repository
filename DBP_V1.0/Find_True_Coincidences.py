@@ -267,7 +267,7 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
             
             
             # testing specific value(s) MC gave us
-            if i in range(4001, 4002):
+            #if i in range(4001, 4002):
                 #print("------------------------")
                 #print(i)
                 #print("---")
@@ -292,7 +292,7 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
             
             
             # testing specific value(s) MC gave us
-            if i in range(4001, 4002):
+            #if i in range(4001, 4002):
                 #print(test_window)
                 
                 
