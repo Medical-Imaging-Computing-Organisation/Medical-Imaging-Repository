@@ -84,12 +84,9 @@ fCo06 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr6, arr0_coeffs, arr
 print("Coincidence 06 done in {} s".format(timer()-Coincidence_Start01))
 
 Coincidence_Start01 = timer()
-fCo07 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr4, arr0_coeffs, arr7_coeffs, arr0_difference, arr7_difference)
+fCo07 = Co.find_true_coincidences(tau, epsilon, E0, arr0, arr7, arr0_coeffs, arr7_coeffs, arr0_difference, arr7_difference)
 print("Coincidence 07 done in {} s".format(timer()-Coincidence_Start01))
-#
-# fCo4 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3, arr2_coeffs, arr3_coeffs, arr2_difference, arr3_difference)
-# fCo5 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr3)
-# fCo6 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr3)
+
 
 Coincidence_Start01 = timer()
 fCo14 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr4, arr1_coeffs, arr4_coeffs, arr1_difference, arr4_difference)
@@ -104,12 +101,8 @@ fCo16 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr6, arr1_coeffs, arr
 print("Coincidence 16 done in {} s".format(timer()-Coincidence_Start01))
 
 Coincidence_Start01 = timer()
-fCo17 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr4, arr1_coeffs, arr7_coeffs, arr1_difference, arr7_difference)
+fCo17 = Co.find_true_coincidences(tau, epsilon, E0, arr1, arr7, arr1_coeffs, arr7_coeffs, arr1_difference, arr7_difference)
 print("Coincidence 17 done in {} s".format(timer()-Coincidence_Start01))
-
-Coincidence_Start01 = timer()
-fCo24 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr4, arr2_coeffs, arr4_coeffs, arr2_difference, arr4_difference)
-print("Coincidence 24 done in {} s".format(timer()-Coincidence_Start01))
 
 Coincidence_Start01 = timer()
 fCo24 = Co.find_true_coincidences(tau, epsilon, E0, arr2, arr4, arr2_coeffs, arr4_coeffs, arr2_difference, arr4_difference)
