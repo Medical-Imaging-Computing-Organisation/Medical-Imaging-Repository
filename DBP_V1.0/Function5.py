@@ -2,15 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
 import scipy.ndimage as ndimage
+import scipy.optimize as opt
 
 
-def draw(h, v, d, dnsy, data, vr, dpa=None):
+def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
     def mosaic():
-        fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
-                    per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis', 'ylabel': 'Y axis', 'zlabel': 'Z axis'},
-                                     2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                                     3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                                     4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
+        if resolution is None:
+            fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
+                        per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis', 'ylabel': 'Y axis', 'zlabel': 'Z axis'},
+                                         2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
+                                         3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
+                                         4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
+        else:
+            fig, ax = plt.subplot_mosaic([[1, 1, 2, 5], [1, 1, 3, 6], [1, 1, 4, 7]], figsize=(10, 5),
+                       per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis', 'ylabel': 'Y axis', 'zlabel':'Z axis'},
+                                       2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
+                                       3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
+                                       4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
         plt.tight_layout()
         return fig, ax
 
@@ -51,7 +59,6 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         loc[0:2] = loc[1::-1]  # swaps yxz into xyz
 
         ax[1].scatter(loc[0], loc[1], loc[2], marker='o', s=100, alpha=0.5)  # source located graph
-
         sizes = np.mean(np.abs(np.array(H[highcluster-1])-np.array(com)), axis=0)
         locvar = sizes*2*vr  # variation in real distance
         locvar[locvar == 0] = vr
@@ -64,7 +71,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         ax[1].plot([loc[0]]*2, [loc[1]-locvar[1], loc[1]+locvar[1]], [loc[2]]*2)
         ax[1].plot([loc[0]-locvar[0], loc[0]+locvar[0]], [loc[1]]*2, [loc[2]]*2)
 
-        return loc, com, locvar, var, (hotfinder!=0)*data
+        return loc, com, locvar, var, gaussed #*(hotfinder!=0)
 
     def planars(com, var):
         '''Planar views'''
@@ -75,12 +82,40 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
         XY = ax[4].pcolormesh(h[0], d[0], np.sum(data[:, :, com[2] - var[2]:com[2] + var[2] + 1], axis=2).T, cmap="YlOrRd")
         plt.colorbar(XY)
 
+    def resolves(hot, loc, locvar, data):
+        X = h[0, :, 0]
+
+        def gaussian(x, amplitude, mean, stddev):
+            return amplitude * np.exp(-((x - mean)**2)/(2*stddev**2))
+
+        def gaussfwhm(ax, X, popt):
+            ax.plot(X, gaussian(X, *popt), lw=2, alpha=.5, color='r')
+            ax.plot([popt[1] - np.sqrt(2*np.log(2))*popt[2],
+                     popt[1] + np.sqrt(2*np.log(2))*popt[2]],
+                    [popt[0]/2]*2, color='r', alpha=0.5)
+
+        def dataplot(ax, X, l, lv, axisdata):
+            ax.plot(X, axisdata)
+            ax.axvline(x=l - lv, color='g', alpha=.3)
+            ax.axvline(x=l, color='g', alpha=.5)
+            ax.axvline(x=l + lv, color='g', alpha=.3)
+            try:
+                popt, _ = opt.curve_fit(gaussian, X, axisdata)
+                gaussfwhm(ax, X, popt)
+            except RuntimeError:
+                print("Gauss fit failed")
+
+        dataplot(ax[5], X, loc[0], locvar[0], data[hot[0], :, hot[2]])
+        dataplot(ax[6], X, loc[1], locvar[1], data[:, hot[1], hot[2]])
+        dataplot(ax[7], X, loc[2], locvar[2], data[hot[0], hot[1], :])
+
+
     def info(loc, locvar):
-        ax[1].set_title('3D Graph', va='top', fontsize=13)
+        ax[1].set_title('3D Graph', loc='left', va='top', fontsize=13)
         loclabel = (f'Predicted source location at:\n' +
-                    f'X: %.5f $\\pm$ %.5f m\n' % (loc[0], locvar[0]) +
-                    f'Y: %.5f $\\pm$ %.5f m\n' % (loc[1], locvar[1]) +
-                    f'Z: %.5f $\\pm$ %.5f m' % (loc[2], locvar[2]))  # Location of hottest voxel
+                    f'X: %.5f $\\pm$ %.5f cm\n' % (100*loc[0], 100*locvar[0]) +
+                    f'Y: %.5f $\\pm$ %.5f cm\n' % (100*loc[1], 100*locvar[1]) +
+                    f'Z: %.5f $\\pm$ %.5f cm' %   (100*loc[2], 100*locvar[2]))  # Location of hottest voxel
         lim = np.max(h) + vr
         ax[1].set_ylim([-lim, lim])
         ax[1].set_xlim([-lim, lim])
@@ -99,8 +134,10 @@ def draw(h, v, d, dnsy, data, vr, dpa=None):
     fig, ax = mosaic()
     cmap()
 
-    loc, com, locvar, var, hotfinder = gaussing()
+    loc, com, locvar, var, gaussed = gaussing()
     xyz(data)
     planars(com, var)
+    if resolution is not None:
+        resolves(com, loc, locvar, data)
     info(loc, locvar)
     return fig, ax
