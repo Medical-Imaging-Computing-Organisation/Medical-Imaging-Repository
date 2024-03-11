@@ -3,13 +3,15 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as LSC
 import scipy.ndimage as ndimage
 import scipy.optimize as opt
+import matplotlib.ticker as ticker
 
 
 def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
     def mosaic():
         if resolution is None:
             fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
-                        per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis', 'ylabel': 'Y axis', 'zlabel': 'Z axis'},
+                        per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis (cm)',
+                                            'ylabel': 'Y axis (cm)', 'zlabel': 'Z axis (cm)'},
                                          2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
                                          3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
                                          4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
@@ -73,7 +75,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
 
         return loc, com, locvar, var, gaussed #*(hotfinder!=0)
 
-    def planars(com, var):
+    def planars(data, com, var):
         '''Planar views'''
         XZ = ax[2].pcolormesh(h[0], d[0], np.sum(data[com[0] - var[0]:com[0] + var[0] + 1, :, :], axis=0), cmap="YlOrRd")
         plt.colorbar(XZ)  # X-Z and Y-Z colour maps
@@ -93,6 +95,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
             ax.plot([popt[1] - np.sqrt(2*np.log(2))*popt[2],
                      popt[1] + np.sqrt(2*np.log(2))*popt[2]],
                     [popt[0]/2]*2, color='r', alpha=0.5)
+            print("FWHM", 2*np.sqrt(2*np.log(2))*popt[2])
 
         def dataplot(ax, X, l, lv, axisdata):
             ax.plot(X, axisdata)
@@ -100,8 +103,8 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
             ax.axvline(x=l, color='g', alpha=.5)
             ax.axvline(x=l + lv, color='g', alpha=.3)
             try:
-                popt, _ = opt.curve_fit(gaussian, X, axisdata)
-                gaussfwhm(ax, X, popt)
+                popt = opt.curve_fit(gaussian, X, axisdata)
+                gaussfwhm(ax, X, popt[0])
             except RuntimeError:
                 print("Gauss fit failed")
 
@@ -115,7 +118,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
         loclabel = (f'Predicted source location at:\n' +
                     f'X: %.5f $\\pm$ %.5f cm\n' % (100*loc[0], 100*locvar[0]) +
                     f'Y: %.5f $\\pm$ %.5f cm\n' % (100*loc[1], 100*locvar[1]) +
-                    f'Z: %.5f $\\pm$ %.5f cm' %   (100*loc[2], 100*locvar[2]))  # Location of hottest voxel
+                    f'Z: %.5f $\\pm$ %.5f cm' % (100*loc[2], 100*locvar[2]))  # Location of hottest voxel
         lim = np.max(h) + vr
         ax[1].set_ylim([-lim, lim])
         ax[1].set_xlim([-lim, lim])
@@ -136,8 +139,19 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
 
     loc, com, locvar, var, gaussed = gaussing()
     xyz(data)
-    planars(com, var)
+    planars(gaussed, com, var)
+
+    ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x*100))
+    for i in range(1, 5):
+        ax[i].xaxis.set_major_formatter(ticks)
+        ax[i].yaxis.set_major_formatter(ticks)
+    ax[1].zaxis.set_major_formatter(ticks)
+
     if resolution is not None:
         resolves(com, loc, locvar, data)
+        ax[5].xaxis.set_major_formatter(ticks)
+        ax[6].xaxis.set_major_formatter(ticks)
+        ax[7].xaxis.set_major_formatter(ticks)
     info(loc, locvar)
+
     return fig, ax
