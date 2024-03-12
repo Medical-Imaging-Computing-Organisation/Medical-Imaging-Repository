@@ -82,7 +82,7 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
     column4 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
     column5 = np.empty((arrA.shape[0], test_window_size), dtype=np.float32)
 
-    #@njit(parallel=True)
+    @njit(parallel=True)
     def two_array_tester(tau, epsilon, E0, arrA, arrB, temp_arr, arrA_coeffs, arrB_coeffs, arrA_difference, arrB_difference, package, column0, column1, column2, column3, column4, column5):
         '''
         @author = Alfie
@@ -164,7 +164,7 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
         
 
         print('Starting Loop')
-        for i in range(0, arrA.shape[0]):
+        for i in prange(0, arrA.shape[0]):
         # iterate over every event in arrA. For the i^th event:          
 
             # generate initial guess of j from linear fit
@@ -259,11 +259,11 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
             column3[i][valid_events.shape[0]:] = 0
             
             # index of scattering detector
-            column4[i][:valid_events.shape[0]] = arrA[0, 0]
+            column4[i][:valid_events.shape[0]] = arrA[i, 0]
             column4[i][valid_events.shape[0]:] = 0
             
             # index of absorbing detector
-            column5[i][:valid_events.shape[0]] = arrB[0, 0]
+            column5[i][:valid_events.shape[0]] = valid_events[:, 0]
             column5[i][valid_events.shape[0]:] = 0            
             
             # package up the columns
@@ -428,9 +428,9 @@ def detector_polynomial_time_fit(arr):
 if __name__ == "__main__":
     start = timer()
     print("Started!")
-    '''
+    
     # Lab data 08 Feb setup 3
-    Delimiter = ','
+    Delimiter = ';'
     Header = 0
     Folder_Path = 'C:/Users/alfie/Documents/DBP_V1.0/08Feb Setup 3-20240213T170159Z-001/08Feb Setup 3'
     ETFile0 = 'CH0 Feb08 Setup 3 A.csv'
@@ -438,10 +438,11 @@ if __name__ == "__main__":
     ETFile2 = 'CH2 Feb08 Setup 3 A.csv'
     ETFile3 = 'CH3 Feb08 Setup 3 A.csv'
     Det_Pos = 'CSV 2.csv'
-    tau = 
-    epsilon =
-    E0 =
-    '''
+    tau = 0
+    epsilon = 0
+    E0 = 0.662
+    data_label = 'Lab 08 Feb setup 3'
+    
     '''
     # Monte Carlo smeared data
     data_label = 'Monte Carlo smeared'
@@ -498,7 +499,7 @@ if __name__ == "__main__":
     epsilon = 1
     E0 = 0.662
     '''
-    
+    '''
     # Monte Carlo final small dataset exact
     data_label = 'Monte Carlo final short-run exact'
     Folder_Path = 'C:/Users/alfie/Documents/Full Small data set/Full Data Set/Exact'
@@ -514,7 +515,7 @@ if __name__ == "__main__":
     tau = 0
     epsilon = 0.000344
     E0 = 0.662
-    
+    '''
     '''
     # Monte Carlo final small dataset exact coincident
     data_label = 'Monte Carlo final small short-run exact coincident'
@@ -564,24 +565,24 @@ if __name__ == "__main__":
     '''
 
     CSV_Start = timer()
-    arr0 = CSV_Extract(Delimiter, Folder_Path, ETFile0)
-    arr1 = CSV_Extract(Delimiter, Folder_Path, ETFile1)
-    arr2 = CSV_Extract(Delimiter, Folder_Path, ETFile2)
-    arr3 = CSV_Extract(Delimiter, Folder_Path, ETFile3)
-    arr4 = CSV_Extract(Delimiter, Folder_Path, ETFile4)
-    arr5 = CSV_Extract(Delimiter, Folder_Path, ETFile5)
-    arr6 = CSV_Extract(Delimiter, Folder_Path, ETFile6)
-    arr7 = CSV_Extract(Delimiter, Folder_Path, ETFile7)
+    arr0 = CSV_Extract(Delimiter, Folder_Path, ETFile0)[:100000]
+    arr1 = CSV_Extract(Delimiter, Folder_Path, ETFile1)[:100000]
+    arr2 = CSV_Extract(Delimiter, Folder_Path, ETFile2)[:100000]
+    arr3 = CSV_Extract(Delimiter, Folder_Path, ETFile3)[:100000]
+    # arr4 = CSV_Extract(Delimiter, Folder_Path, ETFile4)
+    # arr5 = CSV_Extract(Delimiter, Folder_Path, ETFile5)
+    # arr6 = CSV_Extract(Delimiter, Folder_Path, ETFile6)
+    # arr7 = CSV_Extract(Delimiter, Folder_Path, ETFile7)
 
     print("CSV Extraction Done in {} s".format(timer() - CSV_Start))
     print(f'arr0 contains {arr0.shape[0]} events.')
     print(f'arr1 contains {arr1.shape[0]} events.')
     print(f'arr2 contains {arr2.shape[0]} events.')
     print(f'arr3 contains {arr3.shape[0]} events.')
-    print(f'arr4 contains {arr4.shape[0]} events.')
-    print(f'arr5 contains {arr5.shape[0]} events.')
-    print(f'arr6 contains {arr6.shape[0]} events.')
-    print(f'arr7 contains {arr7.shape[0]} events.')
+    # print(f'arr4 contains {arr4.shape[0]} events.')
+    # print(f'arr5 contains {arr5.shape[0]} events.')
+    # print(f'arr6 contains {arr6.shape[0]} events.')
+    # print(f'arr7 contains {arr7.shape[0]} events.')
     '''
     # Generate linear time fits for each detector
     arr0_coeffs, arr0_difference = detector_polynomial_time_fit(arr0)
@@ -689,10 +690,11 @@ if __name__ == "__main__":
     #print(out12)
     '''
     
-    arrays = (arr0, arr1, arr2, arr3, arr4, arr5, arr6, arr7)
+    #arrays = (arr0, arr1, arr2, arr3, arr4, arr5, arr6, arr7)
+    arrays = (arr0, arr1, arr2, arr3)
     
-    for x in range(8):
-        for y in range(x, 8):
+    for x in range(4):
+        for y in range(x, 4):
             if x == y:
                 pass
             else:
