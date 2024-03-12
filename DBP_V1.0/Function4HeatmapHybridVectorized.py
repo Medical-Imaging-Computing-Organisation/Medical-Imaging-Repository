@@ -6,7 +6,7 @@ Created on Tue Jan 30 14:07:55 2024
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import Function5 as F5
+import Function5cm as F5
 # from numba import njit
 # from timeit import default_timer as timer
 # import psutil
@@ -51,12 +51,81 @@ def cones_generator(a, p, Lmax, n0 = 100, Measure=None):
     '''
     theta = a[:, 0]
     umax = np.divide(p,2) * np.sqrt(np.divide(np.sin(theta), n0))
-
+    # print(p)
+    # print(umax)
+    
+    
+    
+    
+    
+    
+    
+    # testing crude weighting implementation
+    
+    
+    # inner_weighting = int(10*p/200)
+    # outer_weighting = int(90*p/200)
+    
+    # x1 = np.linspace(-umax, -umax/2, outer_weighting, endpoint=False) 
+    # x2 = np.linspace(-umax/2, 0, inner_weighting, endpoint=False)
+    # x3 = np.linspace(0, umax/2, inner_weighting, endpoint=False)
+    # x4 = np.linspace(umax/2, umax, outer_weighting, endpoint=True)
+    # x = np.concatenate((x1, x2, x3, x4)).T
+    
+    
+    
+    # inner_weighting = int(40*p/600)
+    # middle_weighting = int(130*p/600)
+    # outer_weighting = int(130*p/600)
+    
+    # print(inner_weighting)
+    
+    
+    # inner_lim = umax/4
+    # outer_lim = 3*umax/4
+    # print("------")
+    # print(inner_lim)
+    # print(outer_lim)
+    
+    # x1 = np.linspace(-umax, -outer_lim, outer_weighting, endpoint=False)
+    # x2 = np.linspace(-outer_lim, -inner_lim, middle_weighting, endpoint=False)
+    # x3 = np.linspace(-inner_lim, 0, inner_weighting, endpoint=False)
+    # x4 = np.linspace(0, inner_lim, inner_weighting, endpoint=False)
+    # x5 = np.linspace(inner_lim, outer_lim, middle_weighting, endpoint=False)
+    # x6 = np.linspace(outer_lim, umax, outer_weighting, endpoint=True)
+    # x = np.concatenate((x1, x2, x3, x4, x5, x6)).T
+    
+    # print(x1)
+    # print("-------")
+    # print(x2)
+    # print("-------")
+    # print(x3)
+    # print("-------")
+    # print(x4)
+    # print("-------")
+    # print(x5)
+    # print("-------")
+    # print(x6)
+    
+    
+    
+    
+    
+    
+    
     x = np.linspace(-umax, umax, p).T
+    # print(x)
+    
+    # testing random sampling removal implementation
+    
+    
     u = np.empty((theta.size, p, p), dtype=np.float32)
     v = np.empty((theta.size, p, p), dtype=np.float32)
     for i in range(umax.size):
         u[i], v[i] = np.meshgrid(x[i], x[i])
+        
+        # if i == 2:
+        #     print(u[i])
 
     r = np.multiply(p ** 2, a.shape[0])
     w = np.sqrt(np.add(np.square(u), np.square(v)))
