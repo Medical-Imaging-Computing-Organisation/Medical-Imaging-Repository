@@ -17,7 +17,7 @@ import Function1 as F1
 import Func2SphericPolar as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
-import Function5cm as F5
+import Function5 as F5
 
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
