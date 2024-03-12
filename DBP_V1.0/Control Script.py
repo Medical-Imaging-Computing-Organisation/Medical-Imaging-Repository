@@ -22,30 +22,30 @@ import Function5 as F5
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
-tau = 0.0001
-epsilon = 0.001
-Delimiter = ','
+tau = 0
+epsilon = 0.
+Delimiter = ';'
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CSV1_Exact_G_D1.csv'
-ETFile1 = 'CSV1_Exact_G_D2.csv'
-ETFile2 = 'CSV1_Exact_G_D3.csv'
-ETFile3 = 'CSV1_Exact_G_D4.csv'
-ETFile4 = 'CSV1_Exact_G_D5.csv'
-ETFile5 = 'CSV1_Exact_G_D6.csv'
-ETFile6 = 'CSV1_Exact_G_D7.csv'
-ETFile7 = 'CSV1_Exact_G_D8.csv'
+ETFile0 = 'CH0 Feb29 Setup 8 A.csv'
+ETFile1 = 'CH1 Feb29 Setup 8 A.csv'
+ETFile2 = 'CH2 Feb29 Setup 8 A.csv'
+ETFile3 = 'CH3 Feb29 Setup 8 A.csv'
+ETFile4 = 'CH4 Feb29 Setup 8 A.csv'
+ETFile5 = 'CH5 Feb29 Setup 8 A.csv'
+ETFile6 = 'CH6 Feb29 Setup 8 A.csv'
+ETFile7 = 'CH7 Feb29 Setup 8 A.csv'
 # ETFile0 = 'CSV1_D1.csv'
 # ETFile1 = 'CSV1_D2.csv'
 # ETFile2 = 'CSV1_D3.csv'
 # ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'CSV 2 MC 8Det.csv'
+Det_Pos = 'positionsetup CSV2 S8 29Feb A.csv'
 # Number_of_Files = 4
 start = timer()
 
 print("Started!")
 CSV_Start = timer()
-arr0, Det_Pos_arr = Ex.CSV_Extract(',', Folder_Path, Det_Pos, Det_Pos)
+arr0, Det_Pos_arr = Ex.CSV_Extract(';', Folder_Path, Det_Pos, Det_Pos)
 arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
 arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
@@ -137,25 +137,7 @@ fCo37 = Co.find_true_coincidences(tau, epsilon, E0, arr3, arr7, arr3_coeffs, arr
 print("Coincidence 37 done in {} s".format(timer()-Coincidence_Start01))
 
 
-# Slicing arrays due to data size
-array_reducing_factor = 2
 
-fCo04 = fCo04[:int(fCo04.shape[0]/array_reducing_factor)]
-fCo05 = fCo05[:int(fCo05.shape[0]/array_reducing_factor)]
-fCo06 = fCo06[:int(fCo06.shape[0]/array_reducing_factor)]
-fCo07 = fCo07[:int(fCo07.shape[0]/array_reducing_factor)]
-fCo14 = fCo14[:int(fCo14.shape[0]/array_reducing_factor)]
-fCo15 = fCo15[:int(fCo15.shape[0]/array_reducing_factor)]
-fCo16 = fCo16[:int(fCo16.shape[0]/array_reducing_factor)]
-fCo17 = fCo17[:int(fCo17.shape[0]/array_reducing_factor)]
-fCo24 = fCo24[:int(fCo24.shape[0]/array_reducing_factor)]
-fCo25 = fCo25[:int(fCo25.shape[0]/array_reducing_factor)]
-fCo26 = fCo26[:int(fCo26.shape[0]/array_reducing_factor)]
-fCo27 = fCo27[:int(fCo27.shape[0]/array_reducing_factor)]
-fCo34 = fCo34[:int(fCo34.shape[0]/array_reducing_factor)]
-fCo35 = fCo35[:int(fCo35.shape[0]/array_reducing_factor)]
-fCo36 = fCo36[:int(fCo36.shape[0]/array_reducing_factor)]
-fCo37 = fCo37[:int(fCo37.shape[0]/array_reducing_factor)]
 
 
 
@@ -163,10 +145,32 @@ fCo37 = fCo37[:int(fCo37.shape[0]/array_reducing_factor)]
 
 # fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
 # fCo = np.vstack((fCo04, fCo05, fCo06, fCo14, fCo15, fCo16, fCo24, fCo25, fCo26, fCo34, fCo35, fCo36))
-fCo = np.vstack((fCo04, fCo05, fCo06, fCo07, fCo14, fCo15, fCo16, fCo17, fCo24, fCo25, fCo26, fCo27, fCo34, fCo35, fCo36, fCo37))
+fCo_full = np.vstack((fCo04, fCo05, fCo06, fCo07, fCo14, fCo15, fCo16, fCo17, fCo24, fCo25, fCo26, fCo27, fCo34, fCo35, fCo36, fCo37))
 print("Overall Coincidence Done in {} s".format(timer() - Coincidence_Start))
 
-# fCo = fCo[0:1]
+# Slicing arrays due to data size
+array_reducing_factor = 5
+
+fCo04r = fCo04[:int(fCo04.shape[0]/array_reducing_factor)]
+fCo05r = fCo05[:int(fCo05.shape[0]/array_reducing_factor)]
+fCo06r = fCo06[:int(fCo06.shape[0]/array_reducing_factor)]
+fCo07r = fCo07[:int(fCo07.shape[0]/array_reducing_factor)]
+fCo14r = fCo14[:int(fCo14.shape[0]/array_reducing_factor)]
+fCo15r = fCo15[:int(fCo15.shape[0]/array_reducing_factor)]
+fCo16r = fCo16[:int(fCo16.shape[0]/array_reducing_factor)]
+fCo17r = fCo17[:int(fCo17.shape[0]/array_reducing_factor)]
+fCo24r = fCo24[:int(fCo24.shape[0]/array_reducing_factor)]
+fCo25r = fCo25[:int(fCo25.shape[0]/array_reducing_factor)]
+fCo26r = fCo26[:int(fCo26.shape[0]/array_reducing_factor)]
+fCo27r = fCo27[:int(fCo27.shape[0]/array_reducing_factor)]
+fCo34r = fCo34[:int(fCo34.shape[0]/array_reducing_factor)]
+fCo35r = fCo35[:int(fCo35.shape[0]/array_reducing_factor)]
+fCo36r = fCo36[:int(fCo36.shape[0]/array_reducing_factor)]
+fCo37r = fCo37[:int(fCo37.shape[0]/array_reducing_factor)]
+
+fCo_reduced = np.vstack((fCo04r, fCo05r, fCo06r, fCo07r, fCo14r, fCo15r, fCo16r, fCo17r, fCo24r, fCo25r, fCo26r, fCo27r, fCo34r, fCo35r, fCo36r, fCo37r))
+
+fCo = fCo_reduced
 
 F1_Start = timer()
 a = np.empty((fCo.shape[0], 4), dtype=np.float32)
@@ -183,12 +187,13 @@ print("F3 Done in {} s".format(timer() - F3_Start))
 
 F4_Start = timer()
 h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 0.4)
-points = F4.cones_generator(f3, 100, lim, n0=800)
+points = F4.cones_generator(f3, 32, lim, n0=4000)
 data = F4.voxel_fit(h, v, d, points, data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
 
 F5_Start = timer()
-fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r, Det_Pos_arr)
+fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r, Det_Pos_arr, 1)
 print("F5 done in %f s" % (timer() - F5_Start))
 plt.show()
+
 
