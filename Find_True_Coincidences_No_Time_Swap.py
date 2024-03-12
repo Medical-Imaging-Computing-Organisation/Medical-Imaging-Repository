@@ -171,7 +171,7 @@ def find_true_coincidences(tau, epsilon, E0, arrA, arrB, arrA_coeffs, arrB_coeff
             initial_j = int((tA[i]-arrB_coeffs[1])/arrB_coeffs[0])
 
             # use initial j guess to inform search window size
-            search_max = int(min(arrB[:,2].shape[0]-1, initial_j+search_window_size))
+            search_max = int(min(arrB[:,2].shape[0]-1, max(search_window_size, initial_j+search_window_size)))
             search_min = int(max(0, initial_j-search_window_size))
             search_window = arrB[int(search_min) : int(search_max)]
             
