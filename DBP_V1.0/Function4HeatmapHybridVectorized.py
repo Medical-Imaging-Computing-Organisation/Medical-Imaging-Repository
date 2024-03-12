@@ -6,7 +6,7 @@ Created on Tue Jan 30 14:07:55 2024
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import Function5cm as F5
+import Function5 as F5
 # from numba import njit
 # from timeit import default_timer as timer
 # import psutil
