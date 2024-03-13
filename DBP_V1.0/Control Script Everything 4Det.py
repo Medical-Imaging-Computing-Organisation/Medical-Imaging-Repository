@@ -102,8 +102,8 @@ for i, fCo in enumerate(allfCo):
     n0 = 4000
     for f3 in split_f3:
         points = np.append(points, F4.cones_generator(f3, p, lim, n0), axis=0)
+    data[i] = F4.voxel_fit(h, v, d, points[1:], data1.shape, voxel_r)
     zeros_counter[i][np.where(data[i]==0)] = 1
-    
     
 # sum the zero counters
 zeros_sum = zeros_counter[0]
