@@ -22,30 +22,30 @@ import Function5 as F5
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
-tau = 0
-epsilon = 0
-Delimiter = ';'
+tau = 0.01
+epsilon = 0.001
+Delimiter = ','
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CH0 Feb29 Setup 8 A.csv'
-ETFile1 = 'CH1 Feb29 Setup 8 A.csv'
-ETFile2 = 'CH2 Feb29 Setup 8 A.csv'
-ETFile3 = 'CH3 Feb29 Setup 8 A.csv'
-ETFile4 = 'CH4 Feb29 Setup 8 A.csv'
-ETFile5 = 'CH5 Feb29 Setup 8 A.csv'
-ETFile6 = 'CH6 Feb29 Setup 8 A.csv'
-ETFile7 = 'CH7 Feb29 Setup 8 A.csv'
+ETFile0 = 'CSV1_Exact_G_D1.csv'
+ETFile1 = 'CSV1_Exact_G_D2.csv'
+ETFile2 = 'CSV1_Exact_G_D3.csv'
+ETFile3 = 'CSV1_Exact_G_D4.csv'
+ETFile4 = 'CSV1_Exact_G_D5.csv'
+ETFile5 = 'CSV1_Exact_G_D6.csv'
+ETFile6 = 'CSV1_Exact_G_D7.csv'
+ETFile7 = 'CSV1_Exact_G_D8.csv'
 # ETFile0 = 'CSV1_D1.csv'
 # ETFile1 = 'CSV1_D2.csv'
 # ETFile2 = 'CSV1_D3.csv'
 # ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'positionsetup CSV2 S8 29Feb A.csv'
+Det_Pos = 'CSV 2 (1).csv'
 # Number_of_Files = 4
 start = timer()
 
 print("Started!")
 CSV_Start = timer()
-_, Det_Pos_arr = Ex.CSV_Extract(';', Folder_Path, Det_Pos, Det_Pos)
+_, Det_Pos_arr = Ex.CSV_Extract(',', Folder_Path, Det_Pos, Det_Pos)
 arr0 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile0)
 arr1 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile1)
 arr2 = Ex.CSV_Extract(Delimiter, Folder_Path, ETFile2)
@@ -175,11 +175,13 @@ for i, fCo in enumerate(allfCo):
     F4_Start = timer()
     h, v, d, data1, voxel_r, dnsy, lim = F4.build_voxels(dnsy, 0.4)
     max_size = 30000
-    split_f3 = np.array_split(f3, (len(f3)+(max_size-1)) // max_size)
+    if f3.shape[0] > max_size:
+        split_f3 = np.array_split(f3, (len(f3)+(max_size-1)) // max_size)
+    else:
+        split_f3 = [f3]
     points = np.zeros((1, 3))
     for f3 in split_f3:
-        points = np.append(points,
-                    F4.cones_generator(f3, 32, lim, n0=4000), axis=0)
+        points = np.append(points, F4.cones_generator(f3, 32, lim, n0=4000), axis=0)
     data[i] = F4.voxel_fit(h, v, d, points[1:], data1.shape, voxel_r)
     zeros_counter[i][np.where(data[i]==0)] = 1
     
