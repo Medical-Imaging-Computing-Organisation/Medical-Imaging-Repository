@@ -57,23 +57,24 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
             pass
 
         com = ndimage.center_of_mass(data, labels=hotfinder2)  # locates centre of mass indices
+        com = com[1], com[0], com[2]  # swaps yxz into xyz maintaining tuple
         loc = np.interp(np.array(com), np.arange(h.shape[0]), h[0, :, 0])  # interpolates indices into locations
-        loc[0:2] = loc[1::-1]  # swaps yxz into xyz
 
         ax[1].scatter(loc[0], loc[1], loc[2], marker='o', s=100, alpha=0.5)  # source located graph
         sizes = np.mean(np.abs(np.array(H[highcluster-1])-np.array(com)), axis=0)
         locvar = sizes*2*vr  # variation in real distance
         locvar[locvar == 0] = vr
 
-        var = np.ceil(sizes).astype(int)  # rounds plane var up
+        com2 = tuple(np.rint(com).astype(int))
+        isizes = np.mean(np.abs(np.array(H[highcluster - 1]) - np.array(com2)), axis=0)  # index size from rounded pos
+        var = np.ceil(isizes).astype(int)  # rounds plane var up
         print("Plane depths", var)
-        com = tuple(np.rint(com).astype(int))  # rounds com decimals to integer indices
 
         ax[1].plot([loc[0]]*2, [loc[1]]*2, [loc[2]-locvar[2], loc[2]+locvar[2]])
         ax[1].plot([loc[0]]*2, [loc[1]-locvar[1], loc[1]+locvar[1]], [loc[2]]*2)
         ax[1].plot([loc[0]-locvar[0], loc[0]+locvar[0]], [loc[1]]*2, [loc[2]]*2)
 
-        return loc, com, locvar, var, gaussed #*(hotfinder!=0)
+        return loc, com2, locvar, var, gaussed #*(hotfinder!=0)
 
     def planars(data, com, var):
         '''Planar views'''
@@ -107,6 +108,8 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
                 gaussfwhm(ax, X, popt[0])
             except RuntimeError:
                 print("Gauss fit failed")
+            ax.set_xlim(-lim, lim)
+            ax.set_ylim(0, 1.1*np.max(axisdata))
 
         dataplot(ax[5], X, loc[0], locvar[0], data[hot[0], :, hot[2]])
         dataplot(ax[6], X, loc[1], locvar[1], data[:, hot[1], hot[2]])
@@ -119,7 +122,6 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
                     f'X: %.5f $\\pm$ %.5f cm\n' % (100*loc[0], 100*locvar[0]) +
                     f'Y: %.5f $\\pm$ %.5f cm\n' % (100*loc[1], 100*locvar[1]) +
                     f'Z: %.5f $\\pm$ %.5f cm' % (100*loc[2], 100*locvar[2]))  # Location of hottest voxel
-        lim = np.max(h) + vr
         ax[1].set_ylim([-lim, lim])
         ax[1].set_xlim([-lim, lim])
         ax[1].set_zlim([-lim, lim])
@@ -134,10 +136,20 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
                 ax[1].text(x=0.01 * dpa[i, 1], y=0.01 * dpa[i, 2],
                            z=0.01 * dpa[i, 3], s=str(int(dpa[i, 0])),
                            ha='center', va='center', clip_on=True)  # Numbers labeled
+
+    lim = np.max(h) + vr
     fig, ax = mosaic()
     cmap()
 
     loc, com, locvar, var, gaussed = gaussing()
+    # '''Detector dark zones to remove mega hot'''
+    # if dpa is not None:
+    #     rands = 15 * vr * (np.random.normal(0, 0.3, (1000, 3)))
+    #     for dpa1 in dpa:
+    #         dparands = np.delete(rands + 0.01 * dpa1[1:4], np.where(np.abs(rands + 0.01 * dpa1[1:4]) > lim)[0], axis=0)
+    #         d_voxels = np.digitize(dparands, h[0, :, 0] + vr, right=True)
+    #         np.multiply.at(data, (d_voxels[:, 1], d_voxels[:, 0], d_voxels[:, 2]), 0.5)
+
     xyz(data)
     planars(gaussed, com, var)
 
@@ -146,7 +158,8 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
         ax[i].xaxis.set_major_formatter(ticks)
         ax[i].yaxis.set_major_formatter(ticks)
     ax[1].zaxis.set_major_formatter(ticks)
-
+    # print(com)
+    # print(loc)
     if resolution is not None:
         resolves(com, loc, locvar, data)
         ax[5].xaxis.set_major_formatter(ticks)
