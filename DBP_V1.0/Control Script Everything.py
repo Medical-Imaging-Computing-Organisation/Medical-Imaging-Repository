@@ -12,18 +12,18 @@ from timeit import default_timer as timer
 # import CSV_Multiple_Detector_File_Extraction as ExH0 Feb29 Setup 8 A
 import CSV_Data_Extraction as Ex
 import Detector_time_fit as Df
-import Find_True_Coincidences as Co
+import Find_True_Coincidences_No_Time_Swap as Co
 import Function1 as F1
 import Func2SphericPolar as F2
 import Function3 as F3
 import Function4HeatmapHybridVectorized as F4
-import Function5 as F5
+import Function5cm as F5
 
 E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
 tau = 0
-epsilon = 0.
+epsilon = 0
 Delimiter = ';'
 Header = 0
 Folder_Path = os.getcwd()
@@ -162,10 +162,11 @@ print("Coincidence 37 done in {} s".format(timer()-Coincidence_Start01))
 
 # fCo = np.vstack((fCo1, fCo2, fCo3, fCo4, fCo5, fCo6))
 # fCo = np.vstack((fCo04, fCo05, fCo06, fCo14, fCo15, fCo16, fCo24, fCo25, fCo26, fCo34, fCo35, fCo36))
-allfCo = np.array([fCo04, fCo05, fCo06, fCo07, fCo14, fCo15, fCo16, fCo17, fCo24, fCo25, fCo26, fCo27, fCo34, fCo35, fCo36, fCo37])
+allfCo = [fCo04, fCo05, fCo06, fCo07, fCo14, fCo15, fCo16, fCo17, fCo24, fCo25, fCo26, fCo27, fCo34, fCo35, fCo36, fCo37]
 print("Overall Coincidence Done in {} s".format(timer() - Coincidence_Start))
 dnsy = 51
-data = np.zeros((allfCo.shape[0], dnsy, dnsy, dnsy))
+data = np.zeros((len(allfCo), dnsy, dnsy, dnsy))
+zeros_counter = np.zeros((len(allfCo), dnsy, dnsy, dnsy))
 for i, fCo in enumerate(allfCo):
     a = np.empty((fCo.shape[0], 4), dtype=np.float32)
     f1 = F1.compton_function(a, fCo, E0, dE0, Me)
@@ -180,12 +181,70 @@ for i, fCo in enumerate(allfCo):
         points = np.append(points,
                     F4.cones_generator(f3, 32, lim, n0=4000), axis=0)
     data[i] = F4.voxel_fit(h, v, d, points[1:], data1.shape, voxel_r)
+    zeros_counter[i][np.where(data[i]==0)] = 1
+    
+    
+# sum the zero counters
+zeros_sum = zeros_counter[0]
+for i in range(1, zeros_counter.shape[0]):
+    zeros_sum += zeros_counter[i]
+
+# set data where originally 0 to scaled value so they're not cut entirely in multiplication
+scaling_factor = 0.11
+
+for i in range(0, data.shape[0]):
+    # find maximum value for each ith element
+    data_max = np.max(data[i])
+    
+    data[i][np.where((data[i] == 0))] = data_max*scaling_factor
+
+
+# modify data according to threshold number of zeros
+# threshold_zero_count = 12
+
+# for i in range(0, data.shape[0]):
+#     data[i][np.where((zeros_sum <= threshold_zero_count) & (data[i] < 1))] = 1
+
+    
+# Basic Multiplicative Option for 16 separate grids
 finaldata = data[0]
 for i in range(1, data.shape[0]-1):
     finaldata *= data[i]
 
+
+
+
+
+# Trying scatterer addition option for 4 summed grids
+
+# added_data = np.zeros((4, dnsy, dnsy, dnsy))
+
+# added_data[0] = data[0]
+# for i in range(1,4):
+#     added_data[0] += data[i]
+
+# added_data[1] = data[4]
+# for i in range(5,8):
+#     added_data[1] += data[i]
+
+# added_data[2] = data[8]
+# for i in range(9,12):
+#     added_data[2] += data[i]
+
+# added_data[3] = data[12]
+# for i in range(12,16):
+#     added_data[3] += data[i]
+    
+# finaldata = added_data[0]
+# for i in range(1, added_data.shape[0]-1):
+#     finaldata *= added_data[i]
+
+
+
+
+
 F5_Start = timer()
 fig, ax = F5.draw(h, v, d, dnsy, finaldata, voxel_r, Det_Pos_arr, 1)
-print("F5 done in %f s" % (timer() - F5_Start))
+print("F5 added done in %f s" % (timer() - F5_Start))
 plt.show()
 
