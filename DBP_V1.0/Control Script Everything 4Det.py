@@ -139,7 +139,7 @@ for i in range(1, data.shape[0]-1):
 # Trying scatterer addition option for 4 summed grids
 
 # added_data = np.zeros((4, dnsy, dnsy, dnsy))
-
+# np.random.shuffle(data)
 # added_data[0] = data[0]
 # for i in range(1,4):
 #     added_data[0] += data[i]
