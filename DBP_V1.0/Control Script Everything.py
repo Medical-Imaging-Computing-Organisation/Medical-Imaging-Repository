@@ -180,8 +180,10 @@ for i, fCo in enumerate(allfCo):
     else:
         split_f3 = [f3]
     points = np.zeros((1, 3))
+    p = 32
+    n0 = 4000
     for f3 in split_f3:
-        points = np.append(points, F4.cones_generator(f3, 32, lim, n0=4000), axis=0)
+        points = np.append(points, F4.cones_generator(f3, p, lim, n0), axis=0)
     data[i] = F4.voxel_fit(h, v, d, points[1:], data1.shape, voxel_r)
     zeros_counter[i][np.where(data[i]==0)] = 1
     
@@ -248,5 +250,8 @@ for i in range(1, data.shape[0]-1):
 F5_Start = timer()
 fig, ax = F5.draw(h, v, d, dnsy, finaldata, voxel_r, Det_Pos_arr, 1)
 print("F5 added done in %f s" % (timer() - F5_Start))
+runLabel = (f"Tau %.4f, Epsilon %.4fMeV, Voxel Density %i, Limits %icm, Point limits %i, Point Density %i/m$^2$"
+            % (tau, epsilon, dnsy, 100*lim, p, n0))
+ax[4].text(x=-12*lim, y=-2*lim, s=runLabel, fontsize=9)
 plt.show()
 
