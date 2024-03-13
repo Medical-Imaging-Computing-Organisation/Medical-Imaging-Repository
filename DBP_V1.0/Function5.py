@@ -43,7 +43,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
         gaussed = ndimage.gaussian_filter(data, 1)
         hottest = np.max(gaussed)
         std = np.std(gaussed)
-        hotfinder, hotfinds = ndimage.label((gaussed >= hottest-1*std)*1)  # labels clusters of near hottest
+        hotfinder, hotfinds = ndimage.label((gaussed >= hottest-1.5*std)*1)  # labels clusters of near hottest
         H = [list(zip(*np.where(hotfinder == k))) for k in range(1, hotfinds+1)]  # compiles indices of each cluster
         highcluster = np.argmax([np.sum([gaussed[I] for I in H[i]]) for i in range(len(H))])+1  # selects highest cluster sum
         hotfinder2 = (hotfinder == highcluster)*1  # selects only highest cluster and norms to 1
@@ -104,7 +104,8 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
             ax.axvline(x=l, color='g', alpha=.5)
             ax.axvline(x=l + lv, color='g', alpha=.3)
             try:
-                popt = opt.curve_fit(gaussian, X, axisdata)
+                popt = opt.curve_fit(gaussian, X, axisdata,
+                                     p0=[np.max(axisdata), l, lv])
                 gaussfwhm(ax, X, popt[0])
             except RuntimeError:
                 print("Gauss fit failed")
@@ -114,7 +115,9 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
         dataplot(ax[5], X, loc[0], locvar[0], data[hot[0], :, hot[2]])
         dataplot(ax[6], X, loc[1], locvar[1], data[:, hot[1], hot[2]])
         dataplot(ax[7], X, loc[2], locvar[2], data[hot[0], hot[1], :])
-
+        ax[5].set_title("X Axis Point Spread Fn", fontsize=9, pad=0.1)
+        ax[6].set_title("Y Axis Point Spread Fn", fontsize=9, pad=0.1)
+        ax[7].set_title("Z Axis Point Spread Fn", fontsize=9, pad=0.1)
 
     def info(loc, locvar):
         ax[1].set_title('3D Graph', loc='left', va='top', fontsize=13)
@@ -126,6 +129,7 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
         ax[1].set_xlim([-lim, lim])
         ax[1].set_zlim([-lim, lim])
         ax[2].text(x=-6.5 * lim, y=0, s=loclabel)
+
 
         '''Detector locations plotted & labeled'''
         if dpa is not None:
