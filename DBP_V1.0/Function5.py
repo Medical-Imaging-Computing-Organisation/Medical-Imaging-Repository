@@ -115,9 +115,9 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
         dataplot(ax[5], X, loc[0], locvar[0], data[hot[0], :, hot[2]])
         dataplot(ax[6], X, loc[1], locvar[1], data[:, hot[1], hot[2]])
         dataplot(ax[7], X, loc[2], locvar[2], data[hot[0], hot[1], :])
-        ax[5].set_title("X Axis Point Spread Fn", fontsize=9, pad=0.1)
-        ax[6].set_title("Y Axis Point Spread Fn", fontsize=9, pad=0.1)
-        ax[7].set_title("Z Axis Point Spread Fn", fontsize=9, pad=0.1)
+        ax[5].set_title("X Axis Point Spread Fn", fontsize=9, pad=0.1, loc='right')
+        ax[6].set_title("Y Axis Point Spread Fn", fontsize=9, pad=0.1, loc='right')
+        ax[7].set_title("Z Axis Point Spread Fn", fontsize=9, pad=0.1, loc='right')
 
     def info(loc, locvar):
         ax[1].set_title('3D Graph', loc='left', va='top', fontsize=13)
