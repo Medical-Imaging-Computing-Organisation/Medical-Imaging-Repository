@@ -185,22 +185,22 @@ for i, fCo in enumerate(allfCo):
     for f3 in split_f3:
         points = np.append(points, F4.cones_generator(f3, p, lim, n0), axis=0)
     data[i] = F4.voxel_fit(h, v, d, points[1:], data1.shape, voxel_r)
-    zeros_counter[i][np.where(data[i]==0)] = 1
+    #zeros_counter[i][np.where(data[i]==0)] = 1
     
     
 # sum the zero counters
-zeros_sum = zeros_counter[0]
-for i in range(1, zeros_counter.shape[0]):
-    zeros_sum += zeros_counter[i]
+#zeros_sum = zeros_counter[0]
+#for i in range(1, zeros_counter.shape[0]):
+    #zeros_sum += zeros_counter[i]
 
 # set data where originally 0 to scaled value so they're not cut entirely in multiplication
-scaling_factor = 0.11
+#scaling_factor = 0.11
 
-for i in range(0, data.shape[0]):
+#for i in range(0, data.shape[0]):
     # find maximum value for each ith element
-    data_max = np.max(data[i])
+    #data_max = np.max(data[i])
     
-    data[i][np.where((data[i] == 0))] = data_max*scaling_factor
+    #data[i][np.where((data[i] == 0))] = data_max*scaling_factor
 
 
 # modify data according to threshold number of zeros
@@ -208,6 +208,12 @@ for i in range(0, data.shape[0]):
 
 # for i in range(0, data.shape[0]):
 #     data[i][np.where((zeros_sum <= threshold_zero_count) & (data[i] < 1))] = 1
+
+
+# additive constant
+additive_constant = 1 # change as needed
+for i in range(0, data.shape[0]):
+    data[i] = data[i] + additive_constant
 
     
 # Basic Multiplicative Option for 16 separate grids
