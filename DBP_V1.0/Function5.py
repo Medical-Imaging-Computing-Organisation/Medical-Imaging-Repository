@@ -17,7 +17,8 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
                                          4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
         else:
             fig, ax = plt.subplot_mosaic([[1, 1, 2, 5], [1, 1, 3, 6], [1, 1, 4, 7]], figsize=(10, 5),
-                       per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis', 'ylabel': 'Y axis', 'zlabel':'Z axis'},
+                       per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis (cm)',
+                                           'ylabel': 'Y axis (cm)', 'zlabel': 'Z axis (cm)'},
                                        2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
                                        3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
                                        4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
@@ -95,8 +96,10 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
             ax.plot(X, gaussian(X, *popt), lw=2, alpha=.5, color='r')
             ax.plot([popt[1] - np.sqrt(2*np.log(2))*popt[2],
                      popt[1] + np.sqrt(2*np.log(2))*popt[2]],
-                    [popt[0]/2]*2, color='r', alpha=0.5)
-            print("FWHM", 2*np.sqrt(2*np.log(2))*popt[2])
+                    [popt[0]/2]*2, color='r', alpha=0.5,
+                    label=f"FWHM\n%.5fcm" % (200*np.sqrt(2*np.log(2))*popt[2]))
+            ax.legend(fontsize=6, loc='upper right', markerscale=0.2, handlelength=0.5)
+            print("FWHM width", 2*np.sqrt(2*np.log(2))*popt[2])
 
         def dataplot(ax, X, l, lv, axisdata):
             ax.plot(X, axisdata)
@@ -146,16 +149,9 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
     cmap()
 
     loc, com, locvar, var, gaussed = gaussing()
-    # '''Detector dark zones to remove mega hot'''
-    # if dpa is not None:
-    #     rands = 15 * vr * (np.random.normal(0, 0.3, (1000, 3)))
-    #     for dpa1 in dpa:
-    #         dparands = np.delete(rands + 0.01 * dpa1[1:4], np.where(np.abs(rands + 0.01 * dpa1[1:4]) > lim)[0], axis=0)
-    #         d_voxels = np.digitize(dparands, h[0, :, 0] + vr, right=True)
-    #         np.multiply.at(data, (d_voxels[:, 1], d_voxels[:, 0], d_voxels[:, 2]), 0.5)
 
     xyz(data)
-    planars(gaussed, com, var)
+    planars(data, com, var)
 
     ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x*100))
     for i in range(1, 5):
