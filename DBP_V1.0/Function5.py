@@ -12,16 +12,16 @@ def draw(h, v, d, dnsy, data, vr, dpa=None, resolution=None):
             fig, ax = plt.subplot_mosaic([[1, 1, 2], [1, 1, 3], [1, 1, 4]], figsize=(10, 5),
                         per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis (cm)',
                                             'ylabel': 'Y axis (cm)', 'zlabel': 'Z axis (cm)'},
-                                         2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                                         3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                                         4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
+                                        2: {'aspect': 'equal', 'xlabel': 'x (cm)', 'ylabel': 'z (cm)'},
+                                        3: {'aspect': 'equal', 'xlabel': 'y (cm)', 'ylabel': 'z (cm)'},
+                                        4: {'aspect': 'equal', 'xlabel': 'x (cm)', 'ylabel': 'y (cm)'}})
         else:
             fig, ax = plt.subplot_mosaic([[1, 1, 2, 5], [1, 1, 3, 6], [1, 1, 4, 7]], figsize=(10, 5),
                        per_subplot_kw={1: {'projection': '3d', 'xlabel': 'X axis (cm)',
                                            'ylabel': 'Y axis (cm)', 'zlabel': 'Z axis (cm)'},
-                                       2: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                                       3: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                                       4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'}})
+                                       2: {'aspect': 'equal', 'xlabel': 'x (cm)', 'ylabel': 'z (cm)'},
+                                       3: {'aspect': 'equal', 'xlabel': 'y (cm)', 'ylabel': 'z (cm)'},
+                                       4: {'aspect': 'equal', 'xlabel': 'x (cm)', 'ylabel': 'y (cm)'}})
         plt.tight_layout()
         return fig, ax
 

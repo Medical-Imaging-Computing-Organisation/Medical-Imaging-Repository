@@ -15,10 +15,11 @@ def draw(h, v, d, dnsy, data1, data2, data, vr, dpa=None, resolution=None):
                                      figsize=(10, 5),
                     per_subplot_kw={1: {'projection': '3d'},
                                     2: {'projection': '3d'},
-                                    3: {'projection': '3d', 'xlabel': 'X axis (cm)', 'ylabel': 'Y axis(cm)', 'zlabel': 'Z axis(cm)'},
-                                    4: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'z'},
-                                    5: {'aspect': 'equal', 'xlabel': 'y', 'ylabel': 'z'},
-                                    6: {'aspect': 'equal', 'xlabel': 'x', 'ylabel': 'y'},
+                                    3: {'projection': '3d', 'xlabel': 'X axis (cm)',
+                                        'ylabel': 'Y axis (cm)', 'zlabel': 'Z axis (cm)'},
+                                    4: {'aspect': 'equal', 'xlabel': 'x (cm)', 'ylabel': 'z (cm)'},
+                                    5: {'aspect': 'equal', 'xlabel': 'y (cm)', 'ylabel': 'z (cm)'},
+                                    6: {'aspect': 'equal', 'xlabel': 'x (cm)', 'ylabel': 'y (cm)'},
                                     7: {},
                                     8: {},
                                     9: {}})
@@ -157,8 +158,8 @@ def draw(h, v, d, dnsy, data1, data2, data, vr, dpa=None, resolution=None):
 
     bar3 = ax[8].bar([0, 3, 6], [100*FWHM1[0], 100*FWHM1[1], 100*FWHM1[2]], color='tab:red', label='Input 1')
     bar4 = ax[8].bar([1, 4, 7], [100*FWHM2[0], 100*FWHM2[1], 100*FWHM2[2]], color='tab:blue', label='Input 2')
-    ax[8].bar_label(bar3, fmt='{:,.1f}', fontsize=5)
-    ax[8].bar_label(bar4, fmt='{:,.1f}', fontsize=5)
+    ax[8].bar_label(bar3, fmt='{:,.1f}', fontsize=7)
+    ax[8].bar_label(bar4, fmt='{:,.1f}', fontsize=7)
     ax[8].set_xticks([0.5, 3.5, 6.5], ['X', 'Y', 'Z'])
     ax[8].set_ylim(0, 1.3*ax[8].get_ylim()[1])
     ax[8].legend(fontsize=5, markerscale=0.2, handlelength=0.5, ncol=2)

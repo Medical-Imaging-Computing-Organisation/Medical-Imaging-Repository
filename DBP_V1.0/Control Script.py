@@ -12,7 +12,7 @@ from timeit import default_timer as timer
 # import CSV_Multiple_Detector_File_Extraction as ExH0 Feb29 Setup 8 A
 import CSV_Data_Extraction as Ex
 import Detector_time_fit as Df
-import Find_True_Coincidences as Co
+import Find_True_Coincidences_No_Time_Swap as Co
 import Function1 as F1
 import Func2SphericPolar as F2
 import Function3 as F3
@@ -23,23 +23,19 @@ E0 = 0.662  # MeV
 dE0 = 3E-5  # MeV
 Me = 0.51099895000  # MeV
 tau = 0
-epsilon = 0.
+epsilon = 0
 Delimiter = ';'
 Header = 0
 Folder_Path = os.getcwd()
-ETFile0 = 'CH0 Feb29 Setup 8 A.csv'
-ETFile1 = 'CH1 Feb29 Setup 8 A.csv'
-ETFile2 = 'CH2 Feb29 Setup 8 A.csv'
-ETFile3 = 'CH3 Feb29 Setup 8 A.csv'
-ETFile4 = 'CH4 Feb29 Setup 8 A.csv'
-ETFile5 = 'CH5 Feb29 Setup 8 A.csv'
-ETFile6 = 'CH6 Feb29 Setup 8 A.csv'
-ETFile7 = 'CH7 Feb29 Setup 8 A.csv'
-# ETFile0 = 'CSV1_D1.csv'
-# ETFile1 = 'CSV1_D2.csv'
-# ETFile2 = 'CSV1_D3.csv'
-# ETFile3 = 'CSV1_D4.csv'
-Det_Pos = 'positionsetup CSV2 S8 29Feb A.csv'
+ETFile0 = 'CH0 Feb22 Setup 7 A.csv'
+ETFile1 = 'CH1 Feb22 Setup 7 A.csv'
+ETFile2 = 'CH2 Feb22 Setup 7 A.csv'
+ETFile3 = 'CH3 Feb22 Setup 7 A.csv'
+ETFile4 = 'CH4 Feb22 Setup 7 A.csv'
+ETFile5 = 'CH5 Feb22 Setup 7 A.csv'
+ETFile6 = 'CH6 Feb22 Setup 7 A.csv'
+ETFile7 = 'CH7 Feb22 Setup 7 A.csv'
+Det_Pos = 'positionsetup CSV2 S7 22Feb A.csv'
 # Number_of_Files = 4
 start = timer()
 
@@ -182,12 +178,14 @@ print("F3 Done in {} s".format(timer() - F3_Start))
 
 F4_Start = timer()
 h, v, d, data, voxel_r, dnsy, lim = F4.build_voxels(51, 0.4)
-max_size = 30000
+max_size = 15000
 split_f3 = np.array_split(f3, (len(f3)+(max_size-1)) // max_size)
 points = np.zeros((1, 3))
+p = 32
+n0 = 4000
 for f3 in split_f3:
     points = np.append(points,
-                F4.cones_generator(f3, 32, lim, n0=4000), axis=0)
+                F4.cones_generator(f3, p, lim, n0=n0), axis=0)
     print('%i chunk done' % f3.shape[0])
 data = F4.voxel_fit(h, v, d, points[1:], data.shape, voxel_r)
 print("F4 Done in {} s".format(timer() - F4_Start))
@@ -195,5 +193,8 @@ print("F4 Done in {} s".format(timer() - F4_Start))
 F5_Start = timer()
 fig, ax = F5.draw(h, v, d, dnsy, data, voxel_r, Det_Pos_arr, 1)
 print("F5 done in %f s" % (timer() - F5_Start))
+runLabel = (f"Tau %.4f, Epsilon %.4fMeV, Voxel Density %i, Limits %icm, Point limits %i, Point Density %i/m$^2$"
+            % (tau, epsilon, dnsy, 100*lim, p, n0))
+ax[4].text(x=-12*lim, y=-2*lim, s=runLabel, fontsize=9)
 plt.show()
 
