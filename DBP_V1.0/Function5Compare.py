@@ -32,6 +32,9 @@ def draw(h, v, d, dnsy, data1, data2, data, vr, dpa=None, resolution=None):
             color_array[:, -1] = np.linspace(0.0, 1.0, 256)**1.5
             map_object = LSC.from_list(name='YlOrRd_alpha2', colors=color_array)
             plt.colormaps.register(cmap=map_object)
+        except ValueError:
+            pass
+        try:
             color_array = plt.get_cmap('PiYG')(range(256))
             color_array[:, -1] = np.abs(np.linspace(-1.0, 1.0, 256))**1.5
             map_object = LSC.from_list(name='PiYG2', colors=color_array)
